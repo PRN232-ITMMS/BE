@@ -33,7 +33,7 @@ namespace InfertilityTreatment.Data.Context
         // Content & Feedback DbSets
         //public DbSet<BlogPost> BlogPosts { get; set; }
         //public DbSet<Review> Reviews { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
+        //public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -106,27 +106,5 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
         {
             return await _dbSet.FirstOrDefaultAsync(predicate);
         }
-
-        public async Task<int> SaveChangesAsync()
-        {
-            try
-            {
-                return await _context.SaveChangesAsync();
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
-            {
-                Console.WriteLine($"DbUpdateException caught: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"General Exception during SaveChanges: {ex.Message}");
-                throw;
-            }
-        }
     }
 }

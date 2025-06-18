@@ -22,7 +22,5 @@ namespace InfertilityTreatment.Data.Repositories.Interfaces
             params Expression<Func<T, object>>[] includes);
         Task<T?> GetByIdWithIncludeAsync(int id, params Expression<Func<T, object>>[] includes);
         Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
-
-        Task<int> SaveChangesAsync();
     }
 }

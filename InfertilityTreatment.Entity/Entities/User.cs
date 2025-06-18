@@ -33,6 +33,6 @@ namespace InfertilityTreatment.Entity.Entities
         public virtual Doctor? Doctor { get; set; }
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         //public virtual ICollection<BlogPost> BlogPosts { get; set; } = new List<BlogPost>();
-        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        //public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }
