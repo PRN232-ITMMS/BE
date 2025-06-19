@@ -27,7 +27,7 @@ namespace InfertilityTreatment.Data.Context
 
         // Appointment & Monitoring DbSets
         public DbSet<Appointment> Appointments { get; set; }
-        //public DbSet<TestResult> TestResults { get; set; }
+        public DbSet<TestResult> TestResults { get; set; }
 
         // Medication DbSets
         //public DbSet<Medication> Medications { get; set; }

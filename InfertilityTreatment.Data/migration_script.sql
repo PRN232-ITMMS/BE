@@ -180,6 +180,51 @@ GO
 BEGIN TRANSACTION;
 GO
 
+CREATE TABLE [notifications] (
+    [Id] int NOT NULL IDENTITY,
+    [UserId] int NOT NULL,
+    [Title] nvarchar(200) NOT NULL,
+    [Message] nvarchar(max) NOT NULL,
+    [Type] nvarchar(50) NOT NULL,
+    [IsRead] bit NOT NULL,
+    [RelatedEntityType] nvarchar(100) NULL,
+    [RelatedEntityId] int NULL,
+    [ScheduledAt] datetime2 NULL,
+    [SentAt] datetime2 NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    [IsActive] bit NOT NULL,
+    CONSTRAINT [PK_notifications] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_notifications_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_notifications_UserId] ON [notifications] ([UserId]);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250616163935_AddNotification', N'8.0.16');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+EXEC sp_rename N'[notifications]', N'Notifications';
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250616171431_RenameNotificationsTable', N'8.0.16');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
 CREATE TABLE [Appointments] (
     [Id] int NOT NULL IDENTITY,
     [CycleId] int NOT NULL,
@@ -275,6 +320,55 @@ GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
 VALUES (N'20250618143728_ModifyAppointments', N'8.0.16');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+CREATE TABLE [TestResults] (
+    [Id] int NOT NULL IDENTITY,
+    [CycleId] int NOT NULL,
+    [TestType] nvarchar(100) NOT NULL,
+    [TestDate] datetime2 NOT NULL,
+    [Results] nvarchar(max) NULL,
+    [ReferenceRange] nvarchar(100) NULL,
+    [Status] nvarchar(50) NOT NULL,
+    [DoctorNotes] nvarchar(max) NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NULL,
+    [IsActive] bit NOT NULL,
+    CONSTRAINT [PK_TestResults] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_TestResults_TreatmentCycles_CycleId] FOREIGN KEY ([CycleId]) REFERENCES [TreatmentCycles] ([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_TestResults_CycleId] ON [TestResults] ([CycleId]);
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250619082902_AddTestResults', N'8.0.16');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+DECLARE @var1 sysname;
+SELECT @var1 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[TestResults]') AND [c].[name] = N'TestType');
+IF @var1 IS NOT NULL EXEC(N'ALTER TABLE [TestResults] DROP CONSTRAINT [' + @var1 + '];');
+ALTER TABLE [TestResults] ALTER COLUMN [TestType] tinyint NOT NULL;
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250619095006_ModifyFieldTestResults', N'8.0.16');
 GO
 
 COMMIT;

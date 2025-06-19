@@ -10,6 +10,8 @@ using InfertilityTreatment.Entity.DTOs.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using InfertilityTreatment.Service.Services;
+using InfertilityTreatment.Repository;
 
 namespace InfertilityTreatment.API.Extensions
 {
@@ -43,6 +45,9 @@ namespace InfertilityTreatment.API.Extensions
 
             services.AddScoped<IDoctorScheduleRepository, DoctorScheduleRepository>();
             services.AddScoped<IDoctorScheduleService, DoctorScheduleService>();
+
+            services.AddScoped<ITestResultRepository, TestResultRepository>();
+            services.AddScoped<ITestResultService, TestResultService>();
 
             // Business Services
             services.AddScoped<IAuthService, AuthService>();
