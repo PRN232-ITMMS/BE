@@ -4,6 +4,7 @@ using InfertilityTreatment.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace InfertilityTreatment.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250619110253_AddTreatmentCycles")]
+    partial class AddTreatmentCycles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,59 +24,6 @@ namespace InfertilityTreatment.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Appointment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<byte>("AppointmentType")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CycleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DoctorScheduleId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Results")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ScheduledDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .IsRequired()
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CycleId");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasIndex("DoctorScheduleId");
-
-                    b.ToTable("Appointments", (string)null);
-                });
 
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Customer", b =>
                 {
@@ -189,107 +139,6 @@ namespace InfertilityTreatment.Data.Migrations
                     b.ToTable("Doctors");
                 });
 
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.DoctorSchedule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("time");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("time");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
-
-                    b.ToTable("DoctorSchedules");
-                });
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("Id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedAt");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit")
-                        .HasColumnName("IsRead");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("Message");
-
-                    b.Property<int?>("RelatedEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("RelatedEntityId");
-
-                    b.Property<string>("RelatedEntityType")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("RelatedEntityType");
-
-                    b.Property<DateTime?>("ScheduledAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("ScheduledAt");
-
-                    b.Property<DateTime?>("SentAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("SentAt");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasColumnName("Title");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("Type");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("UserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("notifications", (string)null);
-                });
-
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -323,52 +172,6 @@ namespace InfertilityTreatment.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens");
-                });
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TestResult", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CycleId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DoctorNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ReferenceRange")
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Results")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("TestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<byte>("TestType")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CycleId");
-
-                    b.ToTable("TestResults");
                 });
 
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TreatmentCycle", b =>
@@ -449,16 +252,12 @@ namespace InfertilityTreatment.Data.Migrations
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
-                        .HasMaxLength(1000)
-                        .HasMaxLength(1000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("DurationWeeks")
                         .HasColumnType("int");
 
                     b.Property<string>("IncludedServices")
-                        .HasMaxLength(1000)
-                        .HasMaxLength(1000)
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(max)");
 
@@ -484,62 +283,6 @@ namespace InfertilityTreatment.Data.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("TreatmentPackages", (string)null);
-                    b.ToTable("TreatmentPackages", (string)null);
-                    b.ToTable("TreatmentPackages", (string)null);
-                });
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TreatmentPhase", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(12,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CycleId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Instructions")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhaseName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("PhaseOrder")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CycleId");
-
-                    b.ToTable("TreatmentPhases");
                 });
 
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TreatmentPhase", b =>
@@ -612,8 +355,6 @@ namespace InfertilityTreatment.Data.Migrations
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
-                        .HasMaxLength(1000)
-                        .HasMaxLength(1000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("EstimatedDuration")
@@ -629,8 +370,6 @@ namespace InfertilityTreatment.Data.Migrations
 
                     b.Property<string>("Requirements")
                         .HasMaxLength(1000)
-                        .HasMaxLength(1000)
-                        .HasMaxLength(1000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -638,8 +377,6 @@ namespace InfertilityTreatment.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TreatmentServices", (string)null);
-                    b.ToTable("TreatmentServices", (string)null);
                     b.ToTable("TreatmentServices", (string)null);
                 });
 
@@ -695,33 +432,6 @@ namespace InfertilityTreatment.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Appointment", b =>
-                {
-                    b.HasOne("InfertilityTreatment.Entity.Entities.TreatmentCycle", "TreatmentCycle")
-                        .WithMany("Appointments")
-                        .HasForeignKey("CycleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("InfertilityTreatment.Entity.Entities.Doctor", "Doctor")
-                        .WithMany("Appointments")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("InfertilityTreatment.Entity.Entities.DoctorSchedule", "DoctorSchedule")
-                        .WithMany()
-                        .HasForeignKey("DoctorScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-
-                    b.Navigation("DoctorSchedule");
-
-                    b.Navigation("TreatmentCycle");
-                });
-
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Customer", b =>
                 {
                     b.HasOne("InfertilityTreatment.Entity.Entities.User", "User")
@@ -744,28 +454,6 @@ namespace InfertilityTreatment.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.DoctorSchedule", b =>
-                {
-                    b.HasOne("InfertilityTreatment.Entity.Entities.Doctor", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-                });
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Notification", b =>
-                {
-                    b.HasOne("InfertilityTreatment.Entity.Entities.User", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.RefreshToken", b =>
                 {
                     b.HasOne("InfertilityTreatment.Entity.Entities.User", "User")
@@ -775,17 +463,6 @@ namespace InfertilityTreatment.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TestResult", b =>
-                {
-                    b.HasOne("InfertilityTreatment.Entity.Entities.TreatmentCycle", "TreatmentCycle")
-                        .WithMany("TestResults")
-                        .HasForeignKey("CycleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TreatmentCycle");
                 });
 
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TreatmentCycle", b =>
@@ -844,14 +521,7 @@ namespace InfertilityTreatment.Data.Migrations
 
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.Doctor", b =>
                 {
-                    b.Navigation("Appointments");
-
                     b.Navigation("TreatmentCycles");
-                });
-
-            modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TreatmentCycle", b =>
-                {
-                    b.Navigation("Appointments");
                 });
 
             modelBuilder.Entity("InfertilityTreatment.Entity.Entities.TreatmentCycle", b =>
@@ -874,8 +544,6 @@ namespace InfertilityTreatment.Data.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Doctor");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("RefreshTokens");
                 });

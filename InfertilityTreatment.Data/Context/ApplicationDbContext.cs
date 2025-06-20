@@ -24,6 +24,7 @@ namespace InfertilityTreatment.Data.Context
         public DbSet<DoctorSchedule> DoctorSchedules { get; set; }
 
         //public DbSet<TreatmentPhase> TreatmentPhases { get; set; }
+        public DbSet<TreatmentPhase> TreatmentPhases { get; set; }
 
         // Appointment & Monitoring DbSets
         public DbSet<Appointment> Appointments { get; set; }

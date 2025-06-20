@@ -13,6 +13,7 @@
   <ItemGroup>
     <Folder Include="DTOs\Auth\" />
     <Folder Include="DTOs\TreatmentCycles\" />
+    <Folder Include="DTOs\Common\" />
   </ItemGroup>
 
 </Project>
