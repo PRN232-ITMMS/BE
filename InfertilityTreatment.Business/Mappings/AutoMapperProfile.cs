@@ -7,7 +7,7 @@ using InfertilityTreatment.Entity.DTOs.TreatmentServices;
 using InfertilityTreatment.Entity.DTOs.TreatmentPakages;
 using InfertilityTreatment.Entity.DTOs.Appointments;
 using InfertilityTreatment.Entity.DTOs.DoctorSchedules;
-using InfertilityTreatment.Entity.DTOs.TestResults;
+using InfertilityTreatment.Entity.DTOs.TestResultss;
 
 namespace InfertilityTreatment.Business.Mappings
 {

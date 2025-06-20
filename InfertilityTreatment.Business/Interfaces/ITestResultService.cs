@@ -1,5 +1,5 @@
 using InfertilityTreatment.Entity.DTOs.Common;
-using InfertilityTreatment.Entity.DTOs.TestResults;
+using InfertilityTreatment.Entity.DTOs.TestResultss;
 using InfertilityTreatment.Entity.Enums;
 using System;
 using System.Threading.Tasks;
