@@ -5,14 +5,27 @@
         // Repository Properties
         IUserRepository Users { get; }
         ICustomerRepository Customers { get; }
-        ITreatmentCycleRepository TreatmentCycles { get; }
-        IRefreshTokenRepository RefreshTokens { get; }
-        IAppointmentRepository Appointments { get; } // Added
         IDoctorRepository Doctors { get; }
+        IRefreshTokenRepository RefreshTokens { get; }
+        
+        // Treatment Related Repositories
+        ITreatmentServiceRepository TreatmentServices { get; }
+        ITreatmentPackageRepository TreatmentPackages { get; }
+        ITreatmentCycleRepository TreatmentCycles { get; }
+        ITreatmentPhaseRepository TreatmentPhases { get; }
+        
+        // Appointment & Scheduling Repositories
+        IAppointmentRepository Appointments { get; }
         IDoctorScheduleRepository DoctorSchedules { get; }
+        
+        // Medical & Monitoring Repositories
+        ITestResultRepository TestResults { get; }
         IMedicationRepository Medications { get; }
         IPrescriptionRepository Prescriptions { get; }
+        
+        // Content & Communication Repositories
         IReviewRepository Reviews { get; }
+        INotificationRepository Notifications { get; }
 
 
         // Transaction Methods

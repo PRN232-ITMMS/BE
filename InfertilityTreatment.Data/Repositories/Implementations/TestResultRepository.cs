@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace InfertilityTreatment.Repository
+namespace InfertilityTreatment.Data.Repositories.Implementations
 {
     public class TestResultRepository : BaseRepository<TestResult>, ITestResultRepository
     {

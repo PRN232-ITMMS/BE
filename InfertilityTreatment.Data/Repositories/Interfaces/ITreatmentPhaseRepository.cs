@@ -11,8 +11,14 @@ namespace InfertilityTreatment.Data.Repositories.Interfaces
 {
     public interface ITreatmentPhaseRepository
     {
+        // Basic CRUD Operations
+        Task<List<TreatmentPhase>> GetAllAsync();
+        Task<TreatmentPhase?> GetByIdAsync(int id);
         Task<TreatmentPhase> AddTreatmentPhaseAsync(TreatmentPhase treatmentPhase);
-        Task<PaginatedResultDto<TreatmentPhase>> GetCyclePhasesByCycleId(int cycleId, TreatmentPhaseFilterDto filter);
         Task<bool> UpdatePhaseAsync(int phaseId, TreatmentPhase treatmentPhase);
+        Task<bool> DeleteAsync(int id);
+        
+        // Specialized Operations
+        Task<PaginatedResultDto<TreatmentPhase>> GetCyclePhasesByCycleId(int cycleId, TreatmentPhaseFilterDto filter);
     }
 }

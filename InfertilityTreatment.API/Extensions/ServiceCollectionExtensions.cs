@@ -10,7 +10,6 @@ using InfertilityTreatment.Entity.DTOs.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using InfertilityTreatment.Repository;
 
 namespace InfertilityTreatment.API.Extensions
 {

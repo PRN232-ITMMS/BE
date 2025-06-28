@@ -31,6 +31,26 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
             return appointment;
         }
 
+        public async Task<List<Appointment>> GetAllAsync()
+        {
+            return await _context.Appointments
+                .Where(a => a.IsActive)
+                .OrderByDescending(a => a.ScheduledDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null) return false;
+            
+            appointment.IsActive = false;
+            appointment.UpdatedAt = DateTime.UtcNow;
+            _context.Appointments.Update(appointment);
+            
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         public async Task<PaginatedResultDto<Appointment>> GetByCustomerAsync(int customerId, PaginationQueryDTO pagination)
         {
             var query = _context.Appointments
@@ -78,7 +98,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<Appointment> GetByIdAsync(int id)
+        public async Task<Appointment?> GetByIdAsync(int id)
         {
             return await _context.Appointments.FindAsync(id);
         }

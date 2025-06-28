@@ -26,6 +26,32 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
             return treatmentPhase;
         }
 
+        public async Task<List<TreatmentPhase>> GetAllAsync()
+        {
+            return await _context.TreatmentPhases
+                .Where(tp => tp.IsActive)
+                .OrderBy(tp => tp.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<TreatmentPhase?> GetByIdAsync(int id)
+        {
+            return await _context.TreatmentPhases
+                .FirstOrDefaultAsync(tp => tp.Id == id && tp.IsActive);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var phase = await GetByIdAsync(id);
+            if (phase == null) return false;
+            
+            phase.IsActive = false;
+            phase.UpdatedAt = DateTime.UtcNow;
+            
+            var result = await _context.SaveChangesAsync();
+            return result > 0;
+        }
+
 
         public async Task<PaginatedResultDto<TreatmentPhase>> GetCyclePhasesByCycleId(int cycleId, TreatmentPhaseFilterDto filter)
         {
