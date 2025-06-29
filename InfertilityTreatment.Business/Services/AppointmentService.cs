@@ -6,10 +6,12 @@ using InfertilityTreatment.Entity.Constants;
 using InfertilityTreatment.Entity.DTOs.Appointments;
 using InfertilityTreatment.Entity.DTOs.Common;
 using InfertilityTreatment.Entity.DTOs.DoctorSchedules;
+using InfertilityTreatment.Entity.DTOs.Notifications;
 using InfertilityTreatment.Entity.DTOs.TreatmentPakages;
 using InfertilityTreatment.Entity.Entities;
 using InfertilityTreatment.Entity.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,16 +24,30 @@ namespace InfertilityTreatment.Business.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly INotificationService _notificationService;
+        private readonly IBaseRepository<User> _userRepository;
+        private readonly ILogger<AppointmentService> _logger;
 
-        public AppointmentService(IUnitOfWork unitOfWork, IMapper mapper)
+        public AppointmentService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            INotificationService notificationService,
+            IBaseRepository<User> userRepository,
+            ILogger<AppointmentService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _notificationService = notificationService;
+            _userRepository = userRepository;
+            _logger = logger;
         }
 
         public async Task<AppointmentResponseDto> CreateAppointmentAsync(CreateAppointmentDto dto)
         {
+            await _unitOfWork.BeginTransactionAsync();
 
+            try
+            {
                 // Check existence of related entities
                 var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(dto.CycleId);
                 if (cycle == null)
@@ -65,6 +81,73 @@ namespace InfertilityTreatment.Business.Services
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
+                // --- TRIGGER LOGIC FOR NOTIFICATIONS AND EMAILS ---
+                try
+                {
+                    var customer = await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId);
+                    var customerUser = (customer != null) ? await _userRepository.GetByIdAsync(customer.UserId) : null;
+
+                    var doctorUser = await _userRepository.GetByIdAsync(doctor.UserId);
+
+                    if (customerUser != null)
+                    {
+                        var customerData = new Dictionary<string, string>
+                        {
+                            { "CustomerName", customerUser.FullName },
+                            { "DoctorName", doctorUser?.FullName ?? "Bác sĩ" },
+                            { "AppointmentDateTime", appointment.ScheduledDateTime.ToString("dd/MM/yyyy HH:mm") },
+                            { "AppointmentType", appointment.AppointmentType.ToString() }
+                        };
+                        await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                        {
+                            UserId = customerUser.Id,
+                            Title = "Xác nhận lịch hẹn của bạn",
+                            Message = $"Lịch hẹn của bạn với {doctorUser?.FullName ?? "bác sĩ"} vào lúc {appointment.ScheduledDateTime:dd/MM/yyyy HH:mm} đã được xác nhận.",
+                            Type = NotificationType.Appointment,
+                            RelatedEntityType = "Appointment",
+                            RelatedEntityId = created.Id,
+                            SendEmail = true,
+                            EmailTemplateName = "AppointmentConfirmation",
+                            EmailTemplateData = customerData
+                        });
+                        _logger.LogInformation("Gửi xác nhận lịch hẹn cho khách hàng {CustomerId}.", customerUser.Id);
+                    }
+
+                    // 2. Appointment Reminder Notification (scheduled 24h before)
+                    var reminderTime = appointment.ScheduledDateTime.AddHours(-24);
+                    if (reminderTime > DateTime.UtcNow)
+                    {
+                        if (customerUser != null)
+                        {
+                            var customerData = new Dictionary<string, string>
+                            {
+                                { "CustomerName", customerUser.FullName },
+                                { "DoctorName", doctorUser?.FullName ?? "Bác sĩ" },
+                                { "AppointmentDateTime", appointment.ScheduledDateTime.ToString("dd/MM/yyyy HH:mm") },
+                                { "AppointmentType", appointment.AppointmentType.ToString() }
+                            };
+                            await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                            {
+                                UserId = customerUser.Id,
+                                Title = "Nhắc nhở lịch hẹn sắp tới",
+                                Message = $"Bạn có lịch hẹn với {doctorUser?.FullName ?? "bác sĩ"} vào lúc {appointment.ScheduledDateTime:dd/MM/yyyy HH:mm} ngày mai.",
+                                Type = NotificationType.Reminder,
+                                RelatedEntityType = "Appointment",
+                                RelatedEntityId = created.Id,
+                                ScheduledAt = reminderTime,
+                                SendEmail = true,
+                                EmailTemplateName = "AppointmentReminder",
+                                EmailTemplateData = customerData
+                            });
+                            _logger.LogInformation("Lên lịch nhắc nhở lịch hẹn cho khách hàng {CustomerId} vào {ReminderTime}.", customerUser.Id, reminderTime);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi khi tạo thông báo cho lịch hẹn mới {AppointmentId}.", created.Id);
+                }
+
                 return new AppointmentResponseDto
                 {
                     Id = created.Id,
@@ -76,8 +159,12 @@ namespace InfertilityTreatment.Business.Services
                     Notes = created.Notes,
                     Results = created.Results
                 };
-            
-            
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task<PaginatedResultDto<AppointmentResponseDto>> GetAppointmentsByCustomerAsync(int customerId, PaginationQueryDTO pagination)
@@ -156,6 +243,74 @@ namespace InfertilityTreatment.Business.Services
             await _unitOfWork.Appointments.UpdateAsync(appointment);
             await _unitOfWork.SaveChangesAsync();
 
+            // --- TRIGGER LOGIC FOR NOTIFICATIONS AND EMAILS (Reschedule) ---
+            try
+            {
+                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var customer = (cycle != null) ? await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId) : null;
+                var customerUser = (customer != null) ? await _userRepository.GetByIdAsync(customer.UserId) : null;
+
+                var doctor = await _unitOfWork.Doctors.GetDoctorByIdAsync(appointment.DoctorId);
+                var doctorUser = await _userRepository.GetByIdAsync(doctor.UserId);
+
+                if (customerUser != null)
+                {
+                    var customerData = new Dictionary<string, string>
+                    {
+                        { "CustomerName", customerUser.FullName },
+                        { "DoctorName", doctorUser?.FullName ?? "Bác sĩ" },
+                        { "AppointmentDateTime", appointment.ScheduledDateTime.ToString("dd/MM/yyyy HH:mm") },
+                        { "AppointmentType", appointment.AppointmentType.ToString() }
+                    };
+                    await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                    {
+                        UserId = customerUser.Id,
+                        Title = "Lịch hẹn của bạn đã được dời lại",
+                        Message = $"Lịch hẹn của bạn với {doctorUser?.FullName ?? "bác sĩ"} đã được dời lại vào lúc {appointment.ScheduledDateTime:dd/MM/yyyy HH:mm}.",
+                        Type = NotificationType.Appointment,
+                        RelatedEntityType = "Appointment",
+                        RelatedEntityId = appointment.Id,
+                        SendEmail = true,
+                        EmailTemplateName = "AppointmentRescheduleConfirmation",
+                        EmailTemplateData = customerData
+                    });
+                    _logger.LogInformation("Gửi thông báo dời lịch hẹn cho khách hàng {CustomerId}.", customerUser.Id);
+                }
+
+                var newReminderTime = appointment.ScheduledDateTime.AddHours(-24);
+                if (newReminderTime > DateTime.UtcNow)
+                {
+                    if (customerUser != null)
+                    {
+                        var customerData = new Dictionary<string, string>
+                            {
+                                { "CustomerName", customerUser.FullName },
+                                { "DoctorName", doctorUser?.FullName ?? "Bác sĩ" },
+                                { "AppointmentDateTime", appointment.ScheduledDateTime.ToString("dd/MM/yyyy HH:mm") },
+                                { "AppointmentType", appointment.AppointmentType.ToString() }
+                            };
+                        await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                        {
+                            UserId = customerUser.Id,
+                            Title = "Nhắc nhở lịch hẹn sắp tới (đã dời)",
+                            Message = $"Lịch hẹn của bạn với {doctorUser?.FullName ?? "bác sĩ"} đã được dời và sẽ diễn ra vào lúc {appointment.ScheduledDateTime:dd/MM/yyyy HH:mm} ngày mai.",
+                            Type = NotificationType.Reminder,
+                            RelatedEntityType = "Appointment",
+                            RelatedEntityId = appointment.Id,
+                            ScheduledAt = newReminderTime,
+                            SendEmail = true,
+                            EmailTemplateName = "AppointmentReminder",
+                            EmailTemplateData = customerData
+                        });
+                        _logger.LogInformation("Đã lên lịch nhắc nhở lịch hẹn dời lại cho khách hàng {CustomerId} vào {NewReminderTime}.", customerUser.Id, newReminderTime);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo thông báo cho lịch hẹn đã dời {AppointmentId}.", appointment.Id);
+            }
+
             return new AppointmentResponseDto
             {
                 Id = appointment.Id,
@@ -173,27 +328,64 @@ namespace InfertilityTreatment.Business.Services
         {
             if (id <= 0)
                 throw new ArgumentException("AppointmentId is required and must be greater than 0");
-            
-                var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
-                if (appointment == null) throw new Exception("Appointment not found");
 
-                appointment.Status = AppointmentStatus.Cancelled;
-                await _unitOfWork.Appointments.UpdateAsync(appointment);
-                await _unitOfWork.SaveChangesAsync();
+            var appointment = await _unitOfWork.Appointments.GetByIdAsync(id);
+            if (appointment == null) throw new Exception("Appointment not found");
 
-                return new AppointmentResponseDto
+            appointment.Status = AppointmentStatus.Cancelled;
+            await _unitOfWork.Appointments.UpdateAsync(appointment);
+            await _unitOfWork.SaveChangesAsync();
+
+            // --- TRIGGER LOGIC FOR NOTIFICATIONS AND EMAILS (Cancel) ---
+            try
+            {
+                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var customer = (cycle != null) ? await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId) : null;
+                var customerUser = (customer != null) ? await _userRepository.GetByIdAsync(customer.UserId) : null;
+
+                var doctor = await _unitOfWork.Doctors.GetDoctorByIdAsync(appointment.DoctorId);
+                var doctorUser = await _userRepository.GetByIdAsync(doctor.UserId);
+
+                if (customerUser != null)
                 {
-                    Id = appointment.Id,
-                    DoctorId = appointment.DoctorId,
-                    DoctorScheduleId = appointment.DoctorScheduleId,
-                    AppointmentType = appointment.AppointmentType,
-                    ScheduledDateTime = appointment.ScheduledDateTime,
-                    Status = appointment.Status,
-                    Notes = appointment.Notes,
-                    Results = appointment.Results
-                };
-            
-            
+                    var customerData = new Dictionary<string, string>
+                    {
+                        { "CustomerName", customerUser.FullName },
+                        { "DoctorName", doctorUser?.FullName ?? "Bác sĩ" },
+                        { "AppointmentDateTime", appointment.ScheduledDateTime.ToString("dd/MM/yyyy HH:mm") },
+                        { "AppointmentType", appointment.AppointmentType.ToString() }
+                    };
+                    await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                    {
+                        UserId = customerUser.Id,
+                        Title = "Lịch hẹn của bạn đã bị hủy",
+                        Message = $"Lịch hẹn của bạn với {doctorUser?.FullName ?? "bác sĩ"} vào lúc {appointment.ScheduledDateTime:dd/MM/yyyy HH:mm} đã bị hủy.",
+                        Type = NotificationType.Appointment,
+                        RelatedEntityType = "Appointment",
+                        RelatedEntityId = appointment.Id,
+                        SendEmail = true,
+                        EmailTemplateName = "AppointmentCancellation",
+                        EmailTemplateData = customerData
+                    });
+                    _logger.LogInformation("Gửi thông báo hủy lịch hẹn cho khách hàng {CustomerId}.", customerUser.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tạo thông báo cho lịch hẹn đã hủy {AppointmentId}.", appointment.Id);
+            }
+
+            return new AppointmentResponseDto
+            {
+                Id = appointment.Id,
+                DoctorId = appointment.DoctorId,
+                DoctorScheduleId = appointment.DoctorScheduleId,
+                AppointmentType = appointment.AppointmentType,
+                ScheduledDateTime = appointment.ScheduledDateTime,
+                Status = appointment.Status,
+                Notes = appointment.Notes,
+                Results = appointment.Results
+            };
         }
 
         public async Task<PaginatedResultDto<DoctorScheduleDto>> GetDoctorAvailabilityAsync(int doctorId, DateTime date, PaginationQueryDTO pagination)
@@ -224,5 +416,4 @@ namespace InfertilityTreatment.Business.Services
             };
         }
     }
-
 }

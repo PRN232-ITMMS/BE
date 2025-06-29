@@ -6,16 +6,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InfertilityTreatment.Entity.Enums;
 
 namespace InfertilityTreatment.Entity.Entities
 {
     [Table("Notifications")]
     public class Notification : BaseEntity
     {
-        [Key]
-        [Column("Id")]
-        public int Id { get; set; }
-
         [Column("UserId")]
         public int UserId { get; set; }
 
@@ -31,14 +28,14 @@ namespace InfertilityTreatment.Entity.Entities
         [Required]
         [Column("Type")]
         [MaxLength(50)]
-        public string Type { get; set; } = string.Empty; // "Reminder", "Appointment", "TestResult", "General"
+        public NotificationType Type { get; set; }
 
         [Column("IsRead")]
         public bool IsRead { get; set; } = false;
 
         [Column("RelatedEntityType")]
         [MaxLength(100)]
-        public string? RelatedEntityType { get; set; } //"Appointment", "TreatmentCycle", "TestResult"
+        public string? RelatedEntityType { get; set; }
 
         [Column("RelatedEntityId")]
         public int? RelatedEntityId { get; set; }
@@ -49,8 +46,9 @@ namespace InfertilityTreatment.Entity.Entities
         [Column("SentAt")]
         public DateTime? SentAt { get; set; }
 
-        [Column("CreatedAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        [Column("EmailStatus")]
+        [MaxLength(20)]
+        public EmailStatus? EmailStatus { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; } = null!;

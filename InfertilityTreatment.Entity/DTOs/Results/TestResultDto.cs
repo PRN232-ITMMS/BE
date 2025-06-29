@@ -19,5 +19,7 @@ namespace InfertilityTreatment.Entity.DTOs.Results
         public TestResultStatus Status { get; set; }
         public string? DoctorNotes { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public bool IsCritical { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InfertilityTreatment.Entity.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,8 +22,7 @@ namespace InfertilityTreatment.Entity.DTOs.Notifications
         public string Message { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(50)]
-        public string Type { get; set; } = string.Empty;
+        public NotificationType Type { get; set; }
 
         public int? RelatedEntityId { get; set; }
 
@@ -30,5 +30,10 @@ namespace InfertilityTreatment.Entity.DTOs.Notifications
         public string? RelatedEntityType { get; set; }
 
         public DateTime? ScheduledAt { get; set; }
+
+        public bool SendEmail { get; set; } = false;
+        public string? EmailSubject { get; set; }
+        public string? EmailTemplateName { get; set; }
+        public Dictionary<string, string>? EmailTemplateData { get; set; }
     }
 }

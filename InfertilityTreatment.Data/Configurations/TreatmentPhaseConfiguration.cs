@@ -1,11 +1,6 @@
 ﻿using InfertilityTreatment.Entity.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InfertilityTreatment.Data.Configurations
 {
@@ -23,10 +18,14 @@ namespace InfertilityTreatment.Data.Configurations
                    .HasColumnType("decimal(12,2)");
 
             builder.HasIndex(x => new { x.CycleId, x.PhaseOrder });
+            builder.HasIndex(x => x.CycleId);
+            builder.HasIndex(x => x.PhaseOrder);
 
-            builder.HasIndex(tp => tp.CycleId);
-            builder.HasIndex(tp => tp.PhaseOrder);
+
+            builder.HasMany(tp => tp.Prescriptions)
+                   .WithOne(p => p.TreatmentPhase)
+                   .HasForeignKey(p => p.PhaseId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
-    
     }
 }

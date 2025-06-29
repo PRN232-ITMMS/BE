@@ -85,7 +85,9 @@ namespace InfertilityTreatment.Business.Mappings
             CreateMap<UpdateAppointmentDto, Appointment>();
 
             //DoctorSchedule
-            CreateMap<DoctorSchedule, DoctorScheduleDto>();
+            CreateMap<DoctorSchedule, DoctorScheduleDto>()
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime.TimeOfDay))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime.TimeOfDay));
             CreateMap<CreateDoctorScheduleDto, DoctorSchedule>();
             CreateMap<UpdateDoctorScheduleDto, DoctorSchedule>();
 

@@ -12,6 +12,8 @@ namespace InfertilityTreatment.Entity.Enums
         Appointment = 2,
         Result = 3,
         General = 4,
-        Emergency = 5
+        Emergency = 5,
+        TreatmentCycleStatusChange = 6,
+        CriticalTestResult = 7
     }
 }

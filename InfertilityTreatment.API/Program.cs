@@ -6,6 +6,8 @@ using InfertilityTreatment.Data.Context;
 using InfertilityTreatment.Data.Repositories.Implementations;
 using InfertilityTreatment.Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using InfertilityTreatment.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,22 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IUserEmailPreferenceRepository, UserEmailPreferenceRepository>();
+
+builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+builder.Services.AddScoped<ITreatmentCycleRepository, TreatmentCycleRepository>();
+builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<ITestResultRepository, TestResultRepository>();
+builder.Services.AddScoped<ITreatmentPhaseRepository, TreatmentPhaseRepository>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSingleton<IEmailQueueService, EmailQueueService>();
+builder.Services.AddScoped<IUserEmailPreferenceService, UserEmailPreferenceService>();
+
+builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<ITestResultService, TestResultService>();
+builder.Services.AddScoped<ICycleService, CycleService>();
 
 // Configure Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -25,6 +40,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add Business Services
 builder.Services.AddBusinessServices();
+
+builder.Services.AddHostedService<EmailSenderBackgroundService>();
+builder.Services.AddHostedService<ScheduledNotificationProcessorService>();
+
 
 // Add JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);

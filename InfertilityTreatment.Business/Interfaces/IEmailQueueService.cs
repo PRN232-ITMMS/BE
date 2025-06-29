@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace InfertilityTreatment.Business.Interfaces
 {
-    public interface IEmailService
+    public interface IEmailQueueService
     {
-        Task SendEmailAsync(EmailDto emailDto);
-        Task SendTemplateEmailAsync(string templateName, Dictionary<string, string> data, string toEmail, string subject);
+        void EnqueueEmail(QueuedEmailItemDto emailItem);
+        QueuedEmailItemDto? DequeueEmail();
+        int QueueCount { get; }
     }
 }

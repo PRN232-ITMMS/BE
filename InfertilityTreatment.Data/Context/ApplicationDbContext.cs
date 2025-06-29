@@ -38,6 +38,7 @@ namespace InfertilityTreatment.Data.Context
         //public DbSet<BlogPost> BlogPosts { get; set; }
         //public DbSet<Review> Reviews { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<UserEmailPreference> UserEmailPreferences { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

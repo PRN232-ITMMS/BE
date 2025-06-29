@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treatment Cycle Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #9C27B0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .cycle-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .status-change {
+            background-color: #e1bee7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 5px 5px;
+        }
+        .highlight {
+            color: #9C27B0;
+            font-weight: bold;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            color: white;
+            font-weight: bold;
+        }
+        .status-old {
+            background-color: #757575;
+        }
+        .status-new {
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Treatment Cycle Update</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Dear {{CustomerName}},</h2>
+        
+        <p>We wanted to update you on the progress of your treatment cycle.</p>
+        
+        <div class="cycle-info">
+            <h3>Cycle Information:</h3>
+            <ul>
+                <li><strong>Cycle ID:</strong> <span class="highlight">{{CycleId}}</span></li>
+                <li><strong>Treatment Type:</strong> <span class="highlight">{{TreatmentType}}</span></li>
+                <li><strong>Start Date:</strong> {{CycleStartDate}}</li>
+                <li><strong>Current Phase:</strong> {{CurrentPhase}}</li>
+            </ul>
+        </div>
+        
+        <div class="status-change">
+            <h3>Status Update:</h3>
+            <p><strong>Previous Status:</strong> <span class="status-badge status-old">{{OldStatus}}</span></p>
+            <p><strong>New Status:</strong> <span class="status-badge status-new">{{NewStatus}}</span></p>
+            <p><strong>Updated On:</strong> {{UpdateDate}}</p>
+        </div>
+        
+        <p><strong>What this means for you:</strong></p>
+        <p>{{StatusExplanation}}</p>
+        
+        <p><strong>Next Steps:</strong></p>
+        <ul>
+            <li>Continue following your prescribed treatment plan</li>
+            <li>Take medications as directed by your care team</li>
+            <li>Attend all scheduled appointments</li>
+            <li>Contact us if you have any concerns or side effects</li>
+        </ul>
+        
+        <p>If you have any questions about this update or your treatment plan, please don't hesitate to contact your care coordinator at <strong>{{CoordinatorPhone}}</strong>.</p>
+        
+        <p>We're here to support you every step of the way on your fertility journey.</p>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Infertility Treatment Clinic</strong><br>
+        Together, we make dreams come true</p>
+    </div>
+</body>
+</html>

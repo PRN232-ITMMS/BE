@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URGENT: Critical Test Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f44336;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .urgent-banner {
+            background-color: #ff9800;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .content {
+            background-color: #ffebee;
+            padding: 20px;
+            border: 2px solid #f44336;
+        }
+        .critical-info {
+            background-color: white;
+            padding: 15px;
+            border-left: 5px solid #f44336;
+            margin: 15px 0;
+        }
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 5px 5px;
+        }
+        .emergency-contact {
+            background-color: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .highlight {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="urgent-banner">
+        ⚠️ URGENT MEDICAL ATTENTION REQUIRED ⚠️
+    </div>
+    
+    <div class="header">
+        <h1>Critical Test Result Alert</h1>
+    </div>
+    
+    <div class="content">
+        <h2>URGENT NOTICE</h2>
+        <h3>Dear {{CustomerName}},</h3>
+        
+        <p><strong style="color: #f44336; font-size: 16px;">Your recent test results require immediate medical attention.</strong></p>
+        
+        <div class="critical-info">
+            <h3>Critical Test Results:</h3>
+            <ul>
+                <li><strong>Test Type:</strong> <span class="highlight">{{TestType}}</span></li>
+                <li><strong>Result Value:</strong> <span class="highlight">{{TestResults}}</span></li>
+                <li><strong>Normal Range:</strong> {{ReferenceRange}}</li>
+                <li><strong>Test Date:</strong> {{TestDate}}</li>
+            </ul>
+        </div>
+        
+        <div class="emergency-contact">
+            <h3>IMMEDIATE ACTION REQUIRED</h3>
+            <p><strong>Call our clinic immediately: {{ClinicPhone}}</strong></p>
+            <p><strong>After hours emergency: {{EmergencyPhone}}</strong></p>
+            <p>Or visit the nearest emergency department</p>
+        </div>
+        
+        <p style="color: #f44336; font-weight: bold; font-size: 16px;">
+            ⚠️ DO NOT DELAY SEEKING MEDICAL CARE ⚠️
+        </p>
+        
+        <p><strong>Important:</strong> This result indicates a condition that may require immediate treatment. Please contact our medical team or seek emergency care right away.</p>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Infertility Treatment Clinic - Medical Team</strong><br>
+        Emergency Contact: {{EmergencyPhone}}</p>
+    </div>
+</body>
+</html>

@@ -38,6 +38,12 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
             return entity;
         }
 
+        public void Update(T entity)
+        {
+            entity.UpdatedAt = DateTime.UtcNow;
+            _dbSet.Update(entity);
+        }
+
         public virtual async Task UpdateAsync(T entity)
         {
             entity.UpdatedAt = DateTime.UtcNow;

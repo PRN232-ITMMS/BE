@@ -10,7 +10,13 @@ namespace InfertilityTreatment.Data.Repositories.Interfaces
 {
     public interface INotificationRepository : IBaseRepository<Notification>
     {
-        Task<List<Notification>> GetNotificationsByUserIdAsync(int userId);
+        Task<List<Notification>> GetNotificationsByUserIdAsync(
+            int userId,
+            DateTime? sentAtStart = null,
+            DateTime? sentAtEnd = null,
+            bool? isRead = null,
+            string sortBy = "CreatedAtDesc");
         Task<int> GetUnreadNotificationsCountAsync(int userId);
+        Task<List<Notification>> GetScheduledPendingNotificationsAsync();
     }
 }

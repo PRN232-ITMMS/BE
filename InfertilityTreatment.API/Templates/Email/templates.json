@@ -1,0 +1,36 @@
+{
+  "EmailTemplates": {
+    "AppointmentReminder": {
+      "Subject": "Appointment Reminder - {{AppointmentType}} with {{DoctorName}}",
+      "HtmlFile": "AppointmentReminder.html"
+    },
+    "TestResultsAvailable": {
+      "Subject": "Your {{TestType}} Test Results Are Available",
+      "HtmlFile": "TestResultsAvailable.html"
+    },
+    "CriticalTestResultAlert": {
+      "Subject": "URGENT: Critical Test Result - Immediate Attention Required",
+      "HtmlFile": "CriticalTestResultAlert.html"
+    },
+    "TreatmentCycleUpdate": {
+      "Subject": "Treatment Cycle Status Update - Cycle {{CycleId}}",
+      "HtmlFile": "TreatmentCycleUpdate.html"
+    },
+    "AppointmentConfirmation": {
+      "Subject": "Appointment Confirmed - {{AppointmentType}} with {{DoctorName}}",
+      "HtmlFile": "AppointmentReminder.html"
+    },
+    "AppointmentCancellation": {
+      "Subject": "Appointment Cancelled - {{AppointmentType}} with {{DoctorName}}",
+      "HtmlFile": "AppointmentReminder.html"
+    },
+    "AppointmentReschedule": {
+      "Subject": "Appointment Rescheduled - {{AppointmentType}} with {{DoctorName}}",
+      "HtmlFile": "AppointmentReminder.html"
+    },
+    "GeneralNotification": {
+      "Subject": "Important Notification from Infertility Treatment Clinic",
+      "HtmlFile": "GeneralNotification.html"
+    }
+  }
+}

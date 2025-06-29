@@ -36,6 +36,9 @@ namespace InfertilityTreatment.Entity.Entities
         [Column(TypeName = "nvarchar(max)")]
         public string? DoctorNotes { get; set; }
 
+        [Required]
+        public bool IsCritical { get; set; } = false;
+
 
         [ForeignKey(nameof(AppointmentId))]
         public virtual Appointment? Appointment { get; set; } = null!;

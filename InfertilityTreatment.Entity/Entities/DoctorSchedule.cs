@@ -11,10 +11,10 @@ namespace InfertilityTreatment.Entity.Entities
         public int DoctorId { get; set; }
 
         [Required]
-        public TimeSpan StartTime { get; set; }
+        public DateTime StartTime { get; set; }
 
         [Required]
-        public TimeSpan EndTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         // Navigation
         [ForeignKey(nameof(DoctorId))]

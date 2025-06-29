@@ -32,16 +32,23 @@ namespace InfertilityTreatment.API.Controllers
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { success = false, 
-                    message = "User not authenticated or ID not found in claims." });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "User not authenticated or ID not found in claims."
+                });
             }
 
             var notifications = await _notificationService.GetUserNotificationsAsync(userId.Value);
 
             if (notifications == null || !notifications.Any())
             {
-                return Ok(new { success = true, 
-                    message = "No notifications found for this user.", data = new List<NotificationResponseDto>() });
+                return Ok(new
+                {
+                    success = true,
+                    message = "No notifications found for this user.",
+                    data = new List<NotificationResponseDto>()
+                });
             }
             return Ok(new { success = true, message = "Notifications retrieved successfully.", data = notifications });
         }
@@ -54,20 +61,29 @@ namespace InfertilityTreatment.API.Controllers
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { success = false, 
-                    message = "User not authenticated or ID not found in claims." });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "User not authenticated or ID not found in claims."
+                });
             }
 
             var notification = await _notificationService.GetNotificationIfOwnedAsync(id, userId.Value);
             if (notification == null || notification.UserId != userId.Value)
-                return NotFound(new { success = false,
-                    message = "You do not have permission to mark this notification as read or notification not found." });
+                return NotFound(new
+                {
+                    success = false,
+                    message = "You do not have permission to mark this notification as read or notification not found."
+                });
 
             var success = await _notificationService.MarkAsReadAsync(id);
             if (!success)
             {
-                return NotFound(new { success = false, 
-                    message = $"Notification with ID {id} not found or could not be marked as read." });
+                return NotFound(new
+                {
+                    success = false,
+                    message = $"Notification with ID {id} not found or could not be marked as read."
+                });
             }
             return Ok(new { success = true, message = $"Notification {id} marked as read successfully." });
         }
@@ -80,15 +96,21 @@ namespace InfertilityTreatment.API.Controllers
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { success = false,
-                    message = "User not authenticated or ID not found in claims." });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "User not authenticated or ID not found in claims."
+                });
             }
 
             var success = await _notificationService.DeleteNotificationAsync(id);
             if (!success)
             {
-                return NotFound(new { success = false,
-                    message = $"Notification with ID {id} not found or could not be deleted." });
+                return NotFound(new
+                {
+                    success = false,
+                    message = $"Notification with ID {id} not found or could not be deleted."
+                });
             }
             return Ok(new { success = true, message = $"Notification {id} deleted successfully." });
         }
@@ -115,8 +137,12 @@ namespace InfertilityTreatment.API.Controllers
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { success = false, message = "Validation failed.", 
-                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Validation failed.",
+                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
+                });
             }
             if (currentUserId == null || currentUserRole == null)
             {
@@ -135,17 +161,20 @@ namespace InfertilityTreatment.API.Controllers
             }
             if (targetUser.Role != UserRole.Customer)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, 
+                return StatusCode(StatusCodes.Status403Forbidden,
                     new { success = false, message = "Doctors can only create notifications for customers." });
             }
 
             var success = await _notificationService.CreateNotificationAsync(createDto);
             if (!success)
             {
-                return BadRequest(new { success = false, 
-                    message = "Failed to create notification due to an internal service error." });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Failed to create notification due to an internal service error."
+                });
             }
-            return StatusCode(StatusCodes.Status201Created, 
+            return StatusCode(StatusCodes.Status201Created,
                 new { success = true, message = "Notification created successfully." });
         }
     }

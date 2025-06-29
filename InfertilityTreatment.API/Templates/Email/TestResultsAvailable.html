@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results Available</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #2196F3;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .test-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 5px 5px;
+        }
+        .highlight {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Test Results Available</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Dear {{CustomerName}},</h2>
+        
+        <p>We're pleased to inform you that your recent test results are now available for review.</p>
+        
+        <div class="test-info">
+            <h3>Test Information:</h3>
+            <ul>
+                <li><strong>Test Type:</strong> <span class="highlight">{{TestType}}</span></li>
+                <li><strong>Test Date:</strong> <span class="highlight">{{TestDate}}</span></li>
+                <li><strong>Results Available Since:</strong> <span class="highlight">{{ResultsAvailableDate}}</span></li>
+            </ul>
+        </div>
+        
+        <p><strong>Next Steps:</strong></p>
+        <ul>
+            <li>Log in to your patient portal to view detailed results</li>
+            <li>Schedule a follow-up appointment to discuss the results with your doctor</li>
+            <li>If you have immediate questions, please contact our nursing team</li>
+        </ul>
+        
+        <p style="text-align: center;">
+            <a href="{{PatientPortalUrl}}" class="button">View Results Online</a>
+        </p>
+        
+        <p>If you have any questions about your results or need to schedule an appointment, please contact us at <strong>{{ClinicPhone}}</strong>.</p>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Infertility Treatment Clinic</strong><br>
+        Your health is our priority</p>
+    </div>
+</body>
+</html>

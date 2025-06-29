@@ -28,6 +28,7 @@ namespace InfertilityTreatment.Entity.Entities
 
         [ForeignKey(nameof(CycleId))]
         public TreatmentCycle? Cycle { get; set; }
+
         public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
     }
 }

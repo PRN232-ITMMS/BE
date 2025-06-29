@@ -23,4 +23,8 @@
     <ProjectReference Include="..\InfertilityTreatment.Entity\InfertilityTreatment.Entity.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Templates\Email\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

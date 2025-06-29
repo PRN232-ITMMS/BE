@@ -3,6 +3,7 @@ using InfertilityTreatment.Business.Interfaces;
 using InfertilityTreatment.Data.Repositories.Implementations;
 using InfertilityTreatment.Data.Repositories.Interfaces;
 using InfertilityTreatment.Entity.DTOs.Common;
+using InfertilityTreatment.Entity.DTOs.Notifications;
 using InfertilityTreatment.Entity.DTOs.TreatmentCycles;
 using InfertilityTreatment.Entity.DTOs.TreatmentPhase;
 using InfertilityTreatment.Entity.Entities;
@@ -25,7 +26,18 @@ namespace InfertilityTreatment.Business.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<CycleService> _logger;
-        public CycleService(ITreatmentCycleRepository treatmentCycleRepository, IMapper mapper,ITreatmentPhaseRepository treatmentPhaseRepository,IDoctorRepository doctorRepository, ILogger<CycleService> logger, IUnitOfWork unitOfWork)
+        private readonly INotificationService _notificationService;
+        private readonly IBaseRepository<User> _userRepository;
+
+        public CycleService(
+            ITreatmentCycleRepository treatmentCycleRepository,
+            IMapper mapper,
+            ITreatmentPhaseRepository treatmentPhaseRepository,
+            IDoctorRepository doctorRepository,
+            ILogger<CycleService> logger,
+            IUnitOfWork unitOfWork,
+            INotificationService notificationService,
+            IBaseRepository<User> userRepository)
         {
             _treatmentCycleRepository = treatmentCycleRepository;
             _mapper = mapper;
@@ -33,7 +45,10 @@ namespace InfertilityTreatment.Business.Services
             _doctorRepository = doctorRepository;
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _notificationService = notificationService;
+            _userRepository = userRepository;
         }
+
         public async Task<PhaseResponseDto> AddPhaseAsync(int cycleId, CreatePhaseDto createPhaseDto)
         {
             await _unitOfWork.BeginTransactionAsync();
@@ -66,7 +81,6 @@ namespace InfertilityTreatment.Business.Services
         {
             try
             {
-                // 1. Validate doctor
                 var doctor = await _doctorRepository.GetDoctorByIdAsync(doctorId);
                 if (doctor is null)
                 {
@@ -80,7 +94,6 @@ namespace InfertilityTreatment.Business.Services
                     throw new InvalidOperationException("Cannot assign an inactive doctor to a treatment cycle");
                 }
 
-                // 2. Validate treatment cycle
                 var cycle = await _treatmentCycleRepository.GetByIdAsync(cycleId);
                 if (cycle is null)
                 {
@@ -94,7 +107,6 @@ namespace InfertilityTreatment.Business.Services
                     throw new InvalidOperationException("Cannot assign doctor to a completed treatment cycle");
                 }
 
-                // 3. Assign doctor
                 var updated = await _treatmentCycleRepository.UpdateDoctorAsync(cycleId, doctorId);
                 if (!updated)
                 {
@@ -119,7 +131,7 @@ namespace InfertilityTreatment.Business.Services
 
         public Task<decimal> CalculateCycleCostAsync(int cycleId)
         {
-           return _treatmentCycleRepository.CalculatePhaseCostAsync(cycleId);
+            return _treatmentCycleRepository.CalculatePhaseCostAsync(cycleId);
         }
         public async Task<CycleResponseDto> CreateCycleAsync(CreateCycleDto createCycleDto)
         {
@@ -212,13 +224,64 @@ namespace InfertilityTreatment.Business.Services
             );
         }
 
-        Task<bool> ICycleService.UpdateCycleStatusAsync(int cycleId, CycleStatus status)
+        public async Task<bool> UpdateCycleStatusAsync(int cycleId, CycleStatus status)
         {
-            return _treatmentCycleRepository.UpdateStatusAsync(cycleId, status);
+            var cycle = await _treatmentCycleRepository.GetByIdAsync(cycleId);
+            if (cycle == null)
+            {
+                _logger.LogWarning("Không tìm thấy Cycle với ID {CycleId} để cập nhật trạng thái.", cycleId);
+                return false;
+            }
+
+            var oldStatus = cycle.Status;
+            var updated = await _treatmentCycleRepository.UpdateStatusAsync(cycleId, status);
+
+            if (updated)
+            {
+                // --- TRIGGER LOGIC FOR NOTIFICATIONS AND EMAILS ---
+                try
+                {
+                    var customer = await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId);
+                    if (customer != null)
+                    {
+                        var customerUser = await _userRepository.GetByIdAsync(customer.UserId);
+                        if (customerUser != null)
+                        {
+                            var customerData = new Dictionary<string, string>
+                            {
+                                { "CustomerName", customerUser.FullName },
+                                { "CycleId", cycle.Id.ToString() },
+                                { "OldStatus", oldStatus.ToString() },
+                                { "NewStatus", status.ToString() }
+                            };
+
+                            await _notificationService.CreateNotificationAsync(new CreateNotificationDto
+                            {
+                                UserId = customerUser.Id,
+                                Title = $"Cập nhật trạng thái chu kỳ điều trị của bạn (ID: {cycle.Id})",
+                                Message = $"Trạng thái chu kỳ điều trị của bạn đã thay đổi từ {oldStatus} sang {status}.",
+                                Type = NotificationType.TreatmentCycleStatusChange,
+                                RelatedEntityType = "TreatmentCycle",
+                                RelatedEntityId = cycle.Id,
+                                SendEmail = true,
+                                EmailTemplateName = "TreatmentCycleStatusChange",
+                                EmailTemplateData = customerData
+                            });
+                            _logger.LogInformation("Gửi thông báo thay đổi trạng thái chu kỳ điều trị cho Customer {CustomerId}.", customer.Id);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi khi tạo thông báo cho thay đổi trạng thái chu kỳ {CycleId}.", cycleId);
+                }
+            }
+            return updated;
         }
+
         public Task<bool> UpdateCycleAsync(int cycleId, UpdateCycleDto dto)
         {
-           var cycle = _mapper.Map<TreatmentCycle>(dto);
+            var cycle = _mapper.Map<TreatmentCycle>(dto);
             cycle.Id = cycleId;
             return _treatmentCycleRepository.UpdateTreatmentCycleAsync(cycle);
         }
