@@ -18,6 +18,13 @@ namespace InfertilityTreatment.API.Controllers
             _service = service;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] PaginationQueryDTO pagination)
+        {
+            var result = await _service.GetAllAsync(pagination);
+            return Ok(ApiResponseDto<PaginatedResultDto<DoctorScheduleDto>>.CreateSuccess(result));
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -27,16 +34,7 @@ namespace InfertilityTreatment.API.Controllers
             return Ok(ApiResponseDto<DoctorScheduleDto>.CreateSuccess(result));
         }
 
-        [HttpGet("by-doctor/{doctorId}")]
-        public async Task<IActionResult> GetByDoctorId(int doctorId, [FromQuery] PaginationQueryDTO pagination)
-        {
-            pagination.PageNumber = pagination.PageNumber <= 0 ? 1 : pagination.PageNumber;
-            pagination.PageSize = pagination.PageSize <= 0 ? 100 : pagination.PageSize;
-            var result = await _service.GetByDoctorIdAsync(doctorId, pagination);
-            return Ok(ApiResponseDto<PaginatedResultDto<DoctorScheduleDto>>.CreateSuccess(result));
-        }
-
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Roles = "Manager")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDoctorScheduleDto dto)
         {
@@ -44,7 +42,7 @@ namespace InfertilityTreatment.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, ApiResponseDto<DoctorScheduleDto>.CreateSuccess(created, "DoctorSchedule created successfully"));
         }
 
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Roles = "Manager")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateDoctorScheduleDto dto)
         {
@@ -52,7 +50,7 @@ namespace InfertilityTreatment.API.Controllers
             return Ok(ApiResponseDto<DoctorScheduleDto>.CreateSuccess(updated, "DoctorSchedule updated successfully"));
         }
 
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Roles = "Manager")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

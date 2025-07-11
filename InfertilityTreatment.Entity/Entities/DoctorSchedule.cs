@@ -7,8 +7,6 @@ namespace InfertilityTreatment.Entity.Entities
 {
     public class DoctorSchedule : BaseEntity
     {
-        [Required]
-        public int DoctorId { get; set; }
 
         [Required]
         public TimeSpan StartTime { get; set; }
@@ -16,8 +14,5 @@ namespace InfertilityTreatment.Entity.Entities
         [Required]
         public TimeSpan EndTime { get; set; }
 
-        // Navigation
-        [ForeignKey(nameof(DoctorId))]
-        public virtual Doctor Doctor { get; set; } = null!;
     }
 }

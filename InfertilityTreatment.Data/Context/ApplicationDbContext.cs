@@ -34,12 +34,6 @@ namespace InfertilityTreatment.Data.Context
         public DbSet<Medication> Medications { get; set; }
         public DbSet<Prescription> Prescriptions { get; set; }
 
-        // Payment & Billing DbSets
-        public DbSet<Payment> Payments { get; set; }
-        public DbSet<PaymentLog> PaymentLogs { get; set; }
-        public DbSet<Invoice> Invoices { get; set; }
-        public DbSet<InvoiceItem> InvoiceItems { get; set; }
-
         // Content & Feedback DbSets
         //public DbSet<BlogPost> BlogPosts { get; set; }
         public DbSet<Review> Reviews { get; set; }
@@ -74,14 +68,7 @@ namespace InfertilityTreatment.Data.Context
                 .Navigation(e => e.TreatmentCycles)
                 .EnableLazyLoading(false);
                 
-            // Payment/Invoice collections - enable lazy loading (typically smaller)
-            modelBuilder.Entity<Customer>()
-                .Navigation(e => e.Payments)
-                .EnableLazyLoading(true);
                 
-            modelBuilder.Entity<Customer>()
-                .Navigation(e => e.Invoices)
-                .EnableLazyLoading(true);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

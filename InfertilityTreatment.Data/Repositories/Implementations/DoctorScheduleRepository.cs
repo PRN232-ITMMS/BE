@@ -18,6 +18,19 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
             _context = context;
         }
 
+        public async Task<PaginatedResultDto<DoctorSchedule>> GetAll(PaginationQueryDTO pagination)
+        {
+            var query = _context.DoctorSchedules.AsQueryable();
+            
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((pagination.PageNumber - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return new PaginatedResultDto<DoctorSchedule>(items, totalCount, pagination.PageNumber, pagination.PageSize);
+        }
+
         public async Task<DoctorSchedule?> GetByIdAsync(int id)
         {
             return await _context.DoctorSchedules.FindAsync(id);
@@ -26,7 +39,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
 
         public async Task<PaginatedResultDto<DoctorSchedule>> GetByDoctorIdAsync(int doctorId, PaginationQueryDTO pagination)
         {
-            var query = _context.DoctorSchedules.Where(ds => ds.DoctorId == doctorId && ds.IsActive);
+            var query = _context.DoctorSchedules.Where(ds => ds.IsActive);
             var totalCount = await query.CountAsync();
             var items = await query.Skip((pagination.PageNumber - 1) * pagination.PageSize).Take(pagination.PageSize).ToListAsync();
             return new PaginatedResultDto<DoctorSchedule>(
@@ -45,7 +58,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
 
             // Check for duplicate schedule for the same doctor and time slot
             bool exists = await _context.DoctorSchedules.AnyAsync(ds =>
-                ds.DoctorId == dto.DoctorId &&
+              
                 ds.StartTime == dto.StartTime &&
                 ds.EndTime == dto.EndTime &&
                 ds.IsActive);
@@ -54,7 +67,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
 
             var entity = new DoctorSchedule
             {
-                DoctorId = dto.DoctorId,
+            
                 StartTime = dto.StartTime,
                 EndTime = dto.EndTime
             };
@@ -65,6 +78,18 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
 
         public async Task<bool> UpdateAsync(DoctorSchedule dto)
         {
+            // Validate: start < end
+            if (dto.StartTime >= dto.EndTime)
+                throw new ArgumentException("StartTime must be less than EndTime");
+
+            // Check for duplicate schedule for the same doctor and time slot
+            bool exists = await _context.DoctorSchedules.AnyAsync(ds =>
+
+                ds.StartTime == dto.StartTime &&
+                ds.EndTime == dto.EndTime &&
+                ds.IsActive);
+            if (exists)
+                throw new InvalidOperationException("Doctor already has this schedule slot.");
             _context.DoctorSchedules.Update(dto);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -93,7 +118,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
             // Assuming schedules are recurring, filter by day of week
             // If schedules are for specific dates, add a Date property to DoctorSchedule and filter by that
             return await _context.DoctorSchedules
-                .Where(ds => ds.DoctorId == doctorId && ds.IsActive)
+                .Where(ds => ds.IsActive)
                 .ToListAsync();
         }
 
@@ -101,7 +126,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
         {
             // If DoctorSchedule is not date-specific, just return all for the doctor
             return await _context.DoctorSchedules
-                .Where(ds => ds.DoctorId == doctorId)
+                
                 .ToListAsync();
         }
     }

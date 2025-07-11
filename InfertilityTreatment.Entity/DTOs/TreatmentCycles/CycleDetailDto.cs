@@ -18,7 +18,7 @@ namespace InfertilityTreatment.Entity.DTOs.TreatmentCycles
         public int PackageId { get; set; }
 
         public int CycleNumber { get; set; } = 1;
-        public CycleStatus Status { get; set; } = CycleStatus.Registered;
+        public CycleStatus Status { get; set; } = CycleStatus.Created;
 
         public DateTime? StartDate { get; set; }
 

@@ -54,7 +54,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
         public async Task<PaginatedResultDto<Appointment>> GetByCustomerAsync(int customerId, PaginationQueryDTO pagination)
         {
             var query = _context.Appointments
-                .Where(a => a.TreatmentCycle.CustomerId == customerId);
+                .Where(a => a.CustomerId == customerId);
 
             var totalCount = await query.CountAsync();
 
@@ -122,7 +122,7 @@ namespace InfertilityTreatment.Data.Repositories.Implementations
         public async Task<PaginatedResultDto<DoctorSchedule>> GetDoctorAvailabilityAsync(int doctorId, DateTime date, PaginationQueryDTO pagination)
         {
             // Get all DoctorSchedules for the doctor
-            var allSchedules = await _context.DoctorSchedules.Where(ds => ds.DoctorId == doctorId).ToListAsync();
+            var allSchedules = await _context.DoctorSchedules.ToListAsync();
             // Get all booked appointments for the doctor on the date
             var bookedAppointments = await _context.Appointments
                 .Where(a => a.DoctorId == doctorId && a.ScheduledDateTime.Date == date.Date && a.Status != AppointmentStatus.Cancelled)

@@ -15,5 +15,7 @@ namespace InfertilityTreatment.Data.Repositories.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<List<DoctorSchedule>> GetSchedulesByDoctorAndDateAsync(int doctorId, DateTime date);
         Task<List<DoctorSchedule>> GetDoctorSchedulesByDateAsync(int doctorId, DateTime date);
+
+        Task<PaginatedResultDto<DoctorSchedule>> GetAll(PaginationQueryDTO pagination);
     }
 }

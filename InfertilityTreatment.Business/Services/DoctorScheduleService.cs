@@ -23,6 +23,17 @@ namespace InfertilityTreatment.Business.Services
             _mapper = mapper;
         }
 
+        public async Task<PaginatedResultDto<DoctorScheduleDto>> GetAllAsync(PaginationQueryDTO pagination)
+        {
+            var result = await _repo.GetAll(pagination);
+            return new PaginatedResultDto<DoctorScheduleDto>(
+                _mapper.Map<List<DoctorScheduleDto>>(result.Items),
+                result.TotalCount,
+                result.PageNumber,
+                result.PageSize
+            );
+        }
+
         public async Task<DoctorScheduleDto?> GetByIdAsync(int id)
         {
             var entity = await _repo.GetByIdAsync(id);

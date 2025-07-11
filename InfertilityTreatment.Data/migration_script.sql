@@ -1046,3 +1046,106 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+DROP TABLE [InvoiceItems];
+GO
+
+DROP TABLE [PaymentLogs];
+GO
+
+DROP TABLE [Invoices];
+GO
+
+DROP TABLE [Payments];
+GO
+
+DECLARE @var7 sysname;
+SELECT @var7 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Appointments]') AND [c].[name] = N'CycleId');
+IF @var7 IS NOT NULL EXEC(N'ALTER TABLE [Appointments] DROP CONSTRAINT [' + @var7 + '];');
+ALTER TABLE [Appointments] ALTER COLUMN [CycleId] int NULL;
+GO
+
+ALTER TABLE [Appointments] ADD [CustomerId] int NOT NULL DEFAULT 0;
+GO
+
+CREATE INDEX [IX_Appointments_CustomerId] ON [Appointments] ([CustomerId]);
+GO
+
+ALTER TABLE [Appointments] ADD CONSTRAINT [FK_Appointments_Customers_CustomerId] FOREIGN KEY ([CustomerId]) REFERENCES [Customers] ([Id]) ON DELETE NO ACTION;
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250711112200_AddCustomerIdToAppointments', N'8.0.16');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+ALTER TABLE [Appointments] DROP CONSTRAINT [FK_Appointments_Customers_CustomerId];
+GO
+
+ALTER TABLE [DoctorSchedules] DROP CONSTRAINT [FK_DoctorSchedules_Doctors_DoctorId];
+GO
+
+DROP INDEX [IX_DoctorSchedules_DoctorId] ON [DoctorSchedules];
+GO
+
+DECLARE @var8 sysname;
+SELECT @var8 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[DoctorSchedules]') AND [c].[name] = N'DoctorId');
+IF @var8 IS NOT NULL EXEC(N'ALTER TABLE [DoctorSchedules] DROP CONSTRAINT [' + @var8 + '];');
+ALTER TABLE [DoctorSchedules] DROP COLUMN [DoctorId];
+GO
+
+DROP INDEX [IX_Appointments_CycleId] ON [Appointments];
+DECLARE @var9 sysname;
+SELECT @var9 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Appointments]') AND [c].[name] = N'CycleId');
+IF @var9 IS NOT NULL EXEC(N'ALTER TABLE [Appointments] DROP CONSTRAINT [' + @var9 + '];');
+UPDATE [Appointments] SET [CycleId] = 0 WHERE [CycleId] IS NULL;
+ALTER TABLE [Appointments] ALTER COLUMN [CycleId] int NOT NULL;
+ALTER TABLE [Appointments] ADD DEFAULT 0 FOR [CycleId];
+CREATE INDEX [IX_Appointments_CycleId] ON [Appointments] ([CycleId]);
+GO
+
+ALTER TABLE [Appointments] ADD CONSTRAINT [FK_Appointments_Customers_CustomerId] FOREIGN KEY ([CustomerId]) REFERENCES [Customers] ([Id]) ON DELETE CASCADE;
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250711113509_FixFieldDoctorSchedules', N'8.0.16');
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+DECLARE @var10 sysname;
+SELECT @var10 = [d].[name]
+FROM [sys].[default_constraints] [d]
+INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Appointments]') AND [c].[name] = N'CycleId');
+IF @var10 IS NOT NULL EXEC(N'ALTER TABLE [Appointments] DROP CONSTRAINT [' + @var10 + '];');
+ALTER TABLE [Appointments] ALTER COLUMN [CycleId] int NULL;
+GO
+
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20250711121406_FixFieldAppointments', N'8.0.16');
+GO
+
+COMMIT;
+GO
+

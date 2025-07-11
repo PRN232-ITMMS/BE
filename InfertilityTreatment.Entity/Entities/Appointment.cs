@@ -7,8 +7,10 @@ namespace InfertilityTreatment.Entity.Entities
 {
     public class Appointment : BaseEntity
     {
-        [Required]
-        public int CycleId { get; set; }
+   
+        public int CustomerId { get; set; }
+
+        public int? CycleId { get; set; }
 
         [Required]
         public int DoctorId { get; set; }
@@ -32,7 +34,10 @@ namespace InfertilityTreatment.Entity.Entities
 
         // Navigation
         [ForeignKey(nameof(CycleId))]
-        public virtual TreatmentCycle TreatmentCycle { get; set; } = null!;
+        public virtual TreatmentCycle? TreatmentCycle { get; set; } = null!;
+
+        [ForeignKey(nameof(CustomerId))]
+        public virtual Customer? Customer { get; set; } = null!;
 
         [ForeignKey(nameof(DoctorId))]
         public virtual Doctor Doctor { get; set; } = null!;
@@ -41,7 +46,5 @@ namespace InfertilityTreatment.Entity.Entities
         public virtual DoctorSchedule DoctorSchedule { get; set; } = null!;
 
         public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
-        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-        public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
     }
 }

@@ -16,7 +16,6 @@ namespace InfertilityTreatment.Business.Interfaces
         Task<EmailResponseDto> SendAppointmentReminderAsync(SendReminderDto dto);
         Task<EmailResponseDto> SendTestResultNotificationAsync(SendTestResultDto dto);
         Task<EmailResponseDto> SendTreatmentPhaseUpdateAsync(SendTreatmentPhaseUpdateDto dto);
-        Task<EmailResponseDto> SendPaymentConfirmationAsync(SendPaymentConfirmationDto dto);
         Task<EmailResponseDto> SendBulkNotificationAsync(BulkEmailDto dto);
     }
 }

@@ -13,7 +13,5 @@ namespace InfertilityTreatment.Entity.Enums
         InProgress = 3,
         Completed = 4,
         Cancelled = 5,
-        // Keep legacy status for backward compatibility
-        Registered = 1
     }
 }

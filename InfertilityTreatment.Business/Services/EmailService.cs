@@ -175,7 +175,7 @@ namespace InfertilityTreatment.Business.Services
                 }
 
                 // Get customer and doctor information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
                 var customer = await _unitOfWork.Customers.GetWithUserAsync(cycle.CustomerId);
                 var doctor = await _unitOfWork.Doctors.GetDoctorByIdAsync(appointment.DoctorId);
                 
@@ -236,7 +236,7 @@ namespace InfertilityTreatment.Business.Services
                 }
 
                 // Get customer and doctor information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
                 var customer = await _unitOfWork.Customers.GetWithUserAsync(cycle.CustomerId);
                 var doctor = await _unitOfWork.Doctors.GetDoctorByIdAsync(appointment.DoctorId);
                 
@@ -372,50 +372,7 @@ namespace InfertilityTreatment.Business.Services
             }
         }
 
-        public async Task<EmailResponseDto> SendPaymentConfirmationAsync(SendPaymentConfirmationDto dto)
-        {
-            try
-            {
-                var payment = await _unitOfWork.PaymentRepository.GetByIdAsync(dto.PaymentId);
-                if (payment == null)
-                {
-                    return new EmailResponseDto
-                    {
-                        Success = false,
-                        Message = "Payment not found",
-                        Errors = new List<string> { "Payment not found" },
-                        FailureCount = 1
-                    };
-                }
-
-                // Get customer information
-                var customer = await _unitOfWork.Customers.GetWithUserAsync(payment.CustomerId);
-                
-                var htmlContent = EmailTemplates.PaymentConfirmation(
-                    payment, 
-                    customer.User?.FullName ?? "Valued Customer");
-                
-                await SendEmailAsync(dto.Email, "Payment Confirmation", htmlContent);
-                
-                return new EmailResponseDto
-                {
-                    Success = true,
-                    Message = "Payment confirmation email sent successfully",
-                    SuccessCount = 1
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send payment confirmation email for payment {PaymentId}", dto.PaymentId);
-                return new EmailResponseDto
-                {
-                    Success = false,
-                    Message = "Failed to send payment confirmation email",
-                    Errors = new List<string> { ex.Message },
-                    FailureCount = 1
-                };
-            }
-        }
+     
 
         public async Task<EmailResponseDto> SendBulkNotificationAsync(BulkEmailDto dto)
         {

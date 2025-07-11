@@ -330,6 +330,23 @@ namespace InfertilityTreatment.Business.Services
                 phase.UpdatedAt = DateTime.UtcNow;
 
                 await _treatmentPhaseRepository.UpdateTreatmentPhaseAsync(phase);
+
+                // Update TreatmentCycle status to InProgress if phase start is successful
+                if (cycle.Status != CycleStatus.InProgress)
+                {
+                    // Use dedicated status update method to ensure database is updated
+                    var statusUpdated = await _treatmentCycleRepository.UpdateStatusAsync(cycleId, CycleStatus.InProgress);
+                    
+                    if (statusUpdated)
+                    {
+                        _logger.LogInformation("Cycle {CycleId} status updated to InProgress (3) during phase start", cycleId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to update cycle {CycleId} status to InProgress", cycleId);
+                    }
+                }
+
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation($"Phase {phaseId} started for cycle {cycleId}");
@@ -544,52 +561,7 @@ namespace InfertilityTreatment.Business.Services
             return (completed, pending, current);
         }
 
-        public async Task<List<PhaseResponseDto>> GenerateDefaultPhasesAsync(int cycleId, GeneratePhasesDto dto)
-        {
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
-            {
-                // Validate cycle exists
-                var cycle = await _treatmentCycleRepository.GetByIdAsync(cycleId);
-                if (cycle == null)
-                    throw new ArgumentException("Invalid cycle ID");
-
-                // Check if phases already exist for this cycle
-                var existingPhases = await _treatmentPhaseRepository.GetPhasesByCycleIdAsync(cycleId);
-                if (existingPhases.Any())
-                    throw new InvalidOperationException("Phases already exist for this cycle. Cannot generate default phases.");
-
-                var phasesToCreate = new List<TreatmentPhase>();
-
-                if (dto.TreatmentType == TreatmentType.IUI)
-                {
-                    phasesToCreate = GenerateIUIPhases(cycleId);
-                }
-                else if (dto.TreatmentType == TreatmentType.IVF)
-                {
-                    phasesToCreate = GenerateIVFPhases(cycleId);
-                }
-
-                // Add all phases
-                foreach (var phase in phasesToCreate)
-                {
-                    await _treatmentPhaseRepository.AddTreatmentPhaseAsync(phase);
-                }
-
-                await _unitOfWork.CommitTransactionAsync();
-
-                var createdPhases = await _treatmentPhaseRepository.GetPhasesByCycleIdAsync(cycleId);
-                _logger.LogInformation($"Generated {createdPhases.Count} default phases for {dto.TreatmentType} cycle {cycleId}");
-
-                return _mapper.Map<List<PhaseResponseDto>>(createdPhases.OrderBy(p => p.PhaseOrder));
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
-        }
+     
 
         #endregion
 
@@ -615,16 +587,12 @@ namespace InfertilityTreatment.Business.Services
                 cycle.UpdatedAt = DateTime.UtcNow;
 
                 await _treatmentCycleRepository.UpdateAsync(cycle);
+                _logger.LogInformation("Cycle {CycleId} status updated to Initialized", cycleId);
 
                 // Auto-generate default phases based on treatment package
                 if (dto.AutoGeneratePhases && cycle.PackageId > 0)
                 {
-                    var generateDto = new GeneratePhasesDto
-                    {
-                        TreatmentType = dto.TreatmentType ?? TreatmentType.IVF
-                    };
-                    
-                    await GenerateDefaultPhasesForCycle(cycleId, generateDto.TreatmentType);
+                    await GenerateDefaultPhasesForCycle(cycleId);
                 }
 
                 // Auto-schedule appointments for phases if requested
@@ -669,10 +637,11 @@ namespace InfertilityTreatment.Business.Services
                 // Update cycle to start treatment
                 cycle.ActualStartDate = dto.ActualStartDate ?? DateTime.UtcNow;
                 cycle.DoctorNotes = dto.DoctorNotes;
-                cycle.Status = CycleStatus.InProgress;
+                cycle.Status = CycleStatus.InProgress; // Status = 3
                 cycle.UpdatedAt = DateTime.UtcNow;
 
                 await _treatmentCycleRepository.UpdateAsync(cycle);
+                _logger.LogInformation("Cycle {CycleId} status updated to InProgress (3)", cycleId);
 
                 // Start the first phase if it exists
                 var firstPhase = await _treatmentPhaseRepository.GetFirstPhaseForCycleAsync(cycleId);
@@ -812,9 +781,9 @@ namespace InfertilityTreatment.Business.Services
             };
         }
 
-        private async Task GenerateDefaultPhasesForCycle(int cycleId, TreatmentType treatmentType)
+        private async Task GenerateDefaultPhasesForCycle(int cycleId)
         {
-            var defaultPhases = GetDefaultPhases(cycleId, treatmentType);
+            var defaultPhases = GetDefaultPhases(cycleId);
             
             foreach (var phase in defaultPhases)
             {
@@ -822,63 +791,18 @@ namespace InfertilityTreatment.Business.Services
             }
         }
 
-        private List<TreatmentPhase> GetDefaultPhases(int cycleId, TreatmentType treatmentType)
+        private List<TreatmentPhase> GetDefaultPhases(int cycleId)
         {
-            return treatmentType switch
-            {
-                TreatmentType.IUI => GenerateIUIPhases(cycleId),
-                TreatmentType.IVF => GenerateIVFPhases(cycleId),
-                _ => GenerateIVFPhases(cycleId)
-            };
+            return
+
+
+                 GeneratePhases(cycleId);
+              
         }
 
-        private List<TreatmentPhase> GenerateIUIPhases(int cycleId)
-        {
-            return new List<TreatmentPhase>
-            {
-                new TreatmentPhase
-                 {
-                    CycleId = cycleId,
-                    PhaseName = "Initial Consultation",
-                    PhaseOrder = 1,
-                    Status = PhaseStatus.Pending,
-                    Instructions = "Discuss treatment plan and conduct initial assessments",
-                     Cost = 150,
-                },
-                new TreatmentPhase
-                {
-                    CycleId = cycleId,
-                    PhaseName = "Ovulation Monitoring",
-                    PhaseOrder = 2,
-                    Status = PhaseStatus.Pending,
-                    Instructions = "Track ovulation through ultrasound and hormone monitoring",
-                    Cost = 300,
-                    CreatedAt = DateTime.UtcNow
-                },
-                new TreatmentPhase
-                {
-                    CycleId = cycleId,
-                    PhaseName = "Insemination",
-                    PhaseOrder = 3,
-                    Status = PhaseStatus.Pending,
-                    Instructions = "Intrauterine insemination procedure",
-                    Cost = 800,
-                    CreatedAt = DateTime.UtcNow
-                },
-                new TreatmentPhase
-                {
-                    CycleId = cycleId,
-                    PhaseName = "Post-IUI Monitoring",
-                    PhaseOrder = 4,
-                    Status = PhaseStatus.Pending,
-                    Instructions = "Monitor for pregnancy and provide support",
-                    Cost = 200,
-                    CreatedAt = DateTime.UtcNow
-                }
-            };
-        }
+        
 
-        private List<TreatmentPhase> GenerateIVFPhases(int cycleId)
+        private List<TreatmentPhase> GeneratePhases(int cycleId)
         {
             return new List<TreatmentPhase>
             {
@@ -978,6 +902,7 @@ namespace InfertilityTreatment.Business.Services
                         {
                             CycleId = cycleId,
                             DoctorId = cycle.DoctorId,
+                            CustomerId = cycle.CustomerId,
                             DoctorScheduleId = appointmentSlot.ScheduleId,
                             AppointmentType = GetAppointmentTypeForPhase(phase.PhaseName),
                             ScheduledDateTime = appointmentSlot.DateTime,
