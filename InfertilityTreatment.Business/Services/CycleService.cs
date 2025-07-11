@@ -213,9 +213,14 @@ namespace InfertilityTreatment.Business.Services
 
             return updated;
         }
-        public async Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByCustomerAsync(int customerId, TreatmentCycleFilterDto filter)
+        public async Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByCustomerAsync(int userId, TreatmentCycleFilterDto filter)
         {
-            var paginatedResult = await _treatmentCycleRepository.GetCyclesByCustomerAsync(customerId, filter);
+            var customer = await _unitOfWork.Customers.GetByUserIdAsync(userId);
+            if (customer == null)
+            {
+                throw new ArgumentException($"Customer with ID {userId} does not exist");
+            }
+            var paginatedResult = await _treatmentCycleRepository.GetCyclesByCustomerAsync(customer.Id, filter);
 
             var mappedItems = paginatedResult.Items
                 .Select(c => _mapper.Map<CycleResponseDto>(c))
@@ -229,9 +234,14 @@ namespace InfertilityTreatment.Business.Services
             );
         }
 
-        public async Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByDoctorAsync(int doctorId, TreatmentCycleFilterDto filter)
+        public async Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByDoctorAsync(int userId, TreatmentCycleFilterDto filter)
         {
-            var paginatedResult = await _treatmentCycleRepository.GetCyclesByDoctorAsync(doctorId, filter);
+            var doctor = await _unitOfWork.Doctors.GetByUserIdAsync(userId);
+            if (doctor == null)
+            {
+                throw new ArgumentException($"Doctor with ID {userId} does not exist");
+            }
+            var paginatedResult = await _treatmentCycleRepository.GetCyclesByDoctorAsync(doctor.Id, filter);
 
             var mappedItems = paginatedResult.Items
                 .Select(c => _mapper.Map<CycleResponseDto>(c))

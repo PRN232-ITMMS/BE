@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FluentValidation;
 using InfertilityTreatment.Data.Repositories.Interfaces;
+using OfficeOpenXml.Packaging;
 
 namespace InfertilityTreatment.API.Controllers
 {
@@ -69,7 +70,7 @@ namespace InfertilityTreatment.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = nameof(UserRole.Doctor) + "," + nameof(UserRole.Manager) + "," + nameof(UserRole.Customer))]
+        [Authorize(Roles = nameof(UserRole.Doctor) + "," + nameof(UserRole.Customer))]
         public async Task<IActionResult> GetTreatmentCycles([FromQuery] TreatmentCycleFilterDto filter)
         {
             if (filter.PageSize > 100)
@@ -77,24 +78,36 @@ namespace InfertilityTreatment.API.Controllers
 
             if (filter.PageNumber < 1)
                 filter.PageNumber = 1;
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var roleStr = User.FindFirstValue(ClaimTypes.Role);
-            if (!Enum.TryParse<UserRole>(roleStr, out var userRole))
-                return Forbid();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return BadRequest(new ApiResponseDto<object>
+                {
+                    Success = false,
+                    Message = "Invalid user ID",
+                    Data = null
+                });
+            }
+
+            if (string.IsNullOrEmpty(roleClaim))
+            {
+                return BadRequest(new ApiResponseDto<object>
+                {
+                    Success = false,
+                    Message = "Invalid user role",
+                    Data = null
+                });
+            }
+            Enum.TryParse<UserRole>(roleClaim, true, out UserRole userRole);
 
             if (userRole == UserRole.Customer)
             {
-                var result = await _cycleService.GetCyclesByCustomerAsync(userId, filter);
-                return Ok(ApiResponseDto<PaginatedResultDto<CycleResponseDto>>.CreateSuccess(result, "Retrieved cycles by customer successfully.."));
+                var customerResult = await _cycleService.GetCyclesByCustomerAsync(userId, filter);
+                return Ok(ApiResponseDto<PaginatedResultDto<CycleResponseDto>>.CreateSuccess(customerResult, "Retrieved cycles by customer successfully.."));
             }
-
-            if (filter.DoctorId.HasValue)
-            {
-                var result = await _cycleService.GetCyclesByDoctorAsync(filter.DoctorId.Value, filter);
-                return Ok(ApiResponseDto<PaginatedResultDto<CycleResponseDto>>.CreateSuccess(result, "Retrieved cycles by doctor successfully."));
-            }
-
-            return BadRequest("Please provide either a valid customerId and doctorId.");
+            var doctorResult = await _cycleService.GetCyclesByDoctorAsync(userId, filter);
+            return Ok(ApiResponseDto<PaginatedResultDto<CycleResponseDto>>.CreateSuccess(doctorResult, "Retrieved cycles by doctor successfully."));
         }
 
 

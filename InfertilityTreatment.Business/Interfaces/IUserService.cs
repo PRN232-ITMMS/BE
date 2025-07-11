@@ -15,5 +15,6 @@ namespace InfertilityTreatment.Business.Interfaces
         Task<PaginatedResultDto<UserProfileDto>> GetUsersAsync(UserFilterDto filter);
         Task<string> UpdateProfileAsync(int userId, UpdateProfileDto updateProfileDto);
         Task<string> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto);
+        Task<UserProfileDto> CreateUserAsync(CreateUserDto createUserDto);
     }
 }
