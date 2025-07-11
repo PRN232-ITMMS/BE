@@ -43,31 +43,7 @@ namespace InfertilityTreatment.API.Controllers
             _doctorRepository = doctorRepository;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateCycle([FromBody] CreateCycleDto createCycleDto)
-        {
-            var validationResult = await _createCycleValidator.ValidateAsync(createCycleDto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.ToDictionary());
-
-            try
-            {
-                var cycleResponse = await _cycleService.CreateCycleAsync(createCycleDto);
-                return Ok(ApiResponseDto<CycleResponseDto>.CreateSuccess(cycleResponse, "Treatment cycle created successfully."));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ApiResponseDto<string>.CreateError(ex.Message));
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ApiResponseDto<string>.CreateError(ex.Message));
-            }
-            catch (ApplicationException ex)
-            {
-                return StatusCode(500, ApiResponseDto<string>.CreateError(ex.Message));
-            }
-        }
+  
 
         [HttpGet]
         [Authorize(Roles = nameof(UserRole.Doctor) + "," + nameof(UserRole.Customer))]
@@ -143,7 +119,31 @@ namespace InfertilityTreatment.API.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateCycle([FromBody] CreateCycleDto createCycleDto)
+        {
+            var validationResult = await _createCycleValidator.ValidateAsync(createCycleDto);
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.ToDictionary());
 
+            try
+            {
+                var cycleResponse = await _cycleService.CreateCycleAsync(createCycleDto);
+                return Ok(ApiResponseDto<CycleResponseDto>.CreateSuccess(cycleResponse, "Treatment cycle created successfully."));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ApiResponseDto<string>.CreateError(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponseDto<string>.CreateError(ex.Message));
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, ApiResponseDto<string>.CreateError(ex.Message));
+            }
+        }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCycle(int id, [FromBody] UpdateCycleDto updateCycleDto)
         {
@@ -363,34 +363,7 @@ namespace InfertilityTreatment.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Generate default phases for a treatment cycle based on treatment type
-        /// </summary>
-        [HttpPost("{cycleId}/phases/generate")]
-        [Authorize(Roles = "Doctor,Admin")]
-        public async Task<IActionResult> GenerateDefaultPhases(int cycleId, [FromBody] GeneratePhasesDto dto)
-        {
-            try
-            {
-                var result = await _cycleService.GenerateDefaultPhasesAsync(cycleId, dto);
-                return Ok(ApiResponseDto<List<PhaseResponseDto>>.CreateSuccess(result, 
-                    $"Generated {result.Count} default phases for {dto.TreatmentType} treatment."));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ApiResponseDto<string>.CreateError(ex.Message));
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ApiResponseDto<string>.CreateError(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    ApiResponseDto<string>.CreateError("An error occurred while generating default phases."));
-            }
-        }
-
+       
         #endregion
 
         #region Cycle Initialization Workflow Endpoints

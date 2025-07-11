@@ -26,9 +26,6 @@
         IReviewRepository Reviews { get; }
         INotificationRepository Notifications { get; }
 
-        // Payment Repositories
-        IPaymentRepository PaymentRepository { get; }
-        IPaymentLogRepository PaymentLogRepository { get; }
 
         // Transaction Methods
         Task<int> SaveChangesAsync();

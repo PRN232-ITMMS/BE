@@ -17,7 +17,6 @@ namespace InfertilityTreatment.Entity.DTOs.TreatmentCycles
         
         public DateTime? EstimatedCompletionDate { get; set; }
         
-        public TreatmentType? TreatmentType { get; set; }
         
         public bool AutoGeneratePhases { get; set; } = true;
         

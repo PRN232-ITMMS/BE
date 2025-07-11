@@ -41,18 +41,19 @@ namespace InfertilityTreatment.Business.Services
         {
 
                 // Check existence of related entities
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(dto.CycleId);
-                if (cycle == null)
-                    throw new ArgumentException("Cycle not found");
+                
                 var doctor = await _unitOfWork.Doctors.GetDoctorByIdAsync(dto.DoctorId);
                 if (doctor == null)
                     throw new ArgumentException("Doctor not found");
                 var doctorSchedule = await _unitOfWork.DoctorSchedules.GetByIdAsync(dto.DoctorScheduleId);
                 if (doctorSchedule == null)
                     throw new ArgumentException("DoctorSchedule not found");
+                var customer = await _unitOfWork.Customers.GetByIdAsync(dto.CustomerId);
+                if (customer == null)
+                throw new ArgumentException("Customer not found");
 
-                // Check for conflict: same doctor, same date, same slot
-                var conflict = await _unitOfWork.Appointments.GetByDoctorAndScheduleAsync(dto.DoctorId, dto.ScheduledDateTime, dto.DoctorScheduleId);
+            // Check for conflict: same doctor, same date, same slot
+            var conflict = await _unitOfWork.Appointments.GetByDoctorAndScheduleAsync(dto.DoctorId, dto.ScheduledDateTime, dto.DoctorScheduleId);
                 if (conflict != null)
                 {
                     throw new InvalidOperationException("Doctor already has an appointment at this time slot.");
@@ -60,7 +61,8 @@ namespace InfertilityTreatment.Business.Services
 
                 var appointment = new Appointment
                 {
-                    CycleId = dto.CycleId,
+                    CycleId = dto?.CycleId,
+                    CustomerId = dto.CustomerId,
                     DoctorId = dto.DoctorId,
                     DoctorScheduleId = dto.DoctorScheduleId,
                     AppointmentType = dto.AppointmentType,
@@ -76,7 +78,8 @@ namespace InfertilityTreatment.Business.Services
                 var result = new AppointmentResponseDto
                 {
                     Id = created.Id,
-                    CycleId = created.CycleId,
+                    CycleId = created?.CycleId,
+                    CustomerId = created.CustomerId,
                     DoctorId = created.DoctorId,
                     DoctorScheduleId = created.DoctorScheduleId,
                     AppointmentType = created.AppointmentType,
@@ -97,10 +100,10 @@ namespace InfertilityTreatment.Business.Services
             
         }
 
-        public async Task<PaginatedResultDto<AppointmentResponseDto>> GetAppointmentsByCustomerAsync(int customerId, PaginationQueryDTO pagination)
+        public async Task<PaginatedResultDto<AppointmentResponseDto>> GetAppointmentsByCustomerAsync(int userId, PaginationQueryDTO pagination)
         {
-            var cus = await _unitOfWork.Users.GetByIdWithProfilesAsync(customerId);
-            if (cus?.Customer == null)
+            var cus = await _unitOfWork.Customers.GetByUserIdAsync(userId);
+            if (cus == null)
             {
                 return new PaginatedResultDto<AppointmentResponseDto>(
                 [],
@@ -109,11 +112,13 @@ namespace InfertilityTreatment.Business.Services
                 pagination.PageSize
             );
             }
-            var list = await _unitOfWork.Appointments.GetByCustomerAsync(cus.Customer.Id, pagination);
+            var list = await _unitOfWork.Appointments.GetByCustomerAsync(cus.Id, pagination);
             var dtoList = list.Items.Select(a => new AppointmentResponseDto
             {
                 Id = a.Id,
                 DoctorId = a.DoctorId,
+                CycleId = a.CycleId,
+                CustomerId = a.CustomerId,
                 DoctorScheduleId = a.DoctorScheduleId,
                 AppointmentType = a.AppointmentType,
                 ScheduledDateTime = a.ScheduledDateTime,
@@ -130,10 +135,10 @@ namespace InfertilityTreatment.Business.Services
             );
         }
 
-        public async Task<PaginatedResultDto<AppointmentResponseDto>> GetAppointmentsByDoctorAsync(int doctorId, DateTime date, PaginationQueryDTO pagination)
+        public async Task<PaginatedResultDto<AppointmentResponseDto>> GetAppointmentsByDoctorAsync(int userId, DateTime date, PaginationQueryDTO pagination)
         {
-            var doc = await _unitOfWork.Users.GetByIdWithProfilesAsync(doctorId);
-            if (doc?.Doctor == null)
+            var doc = await _unitOfWork.Doctors.GetByUserIdAsync(userId);
+            if (doc == null)
             {
                 return new PaginatedResultDto<AppointmentResponseDto>(
                 [],
@@ -142,10 +147,12 @@ namespace InfertilityTreatment.Business.Services
                 pagination.PageSize
             );
             }
-            var list = await _unitOfWork.Appointments.GetByDoctorAndDateAsync(doc.Doctor.Id, date, pagination);
+            var list = await _unitOfWork.Appointments.GetByDoctorAndDateAsync(doc.Id, date, pagination);
             var dtoList = list.Items.Select(a => new AppointmentResponseDto
             {
                 Id = a.Id,
+                CycleId = a.CycleId,
+                CustomerId = a.CustomerId,
                 DoctorId = a.DoctorId,
                 DoctorScheduleId = a.DoctorScheduleId,
                 AppointmentType = a.AppointmentType,
@@ -263,7 +270,8 @@ namespace InfertilityTreatment.Business.Services
             return new AppointmentResponseDto
             {
                 Id = appointment.Id,
-                CycleId = appointment.CycleId,
+                CycleId = appointment?.CycleId,
+                CustomerId = appointment.CustomerId,
                 DoctorId = appointment.DoctorId,
                 DoctorScheduleId = appointment.DoctorScheduleId,
                 AppointmentType = appointment.AppointmentType,
@@ -275,71 +283,7 @@ namespace InfertilityTreatment.Business.Services
         }
 
         // Enhanced Appointment Features
-        public async Task<AvailabilityResponseDto> CheckAvailabilityAsync(AvailabilityQueryDto query)
-        {
-            var doctor = await _unitOfWork.Doctors.GetDoctorByIdAsync(query.DoctorId);
-            if (doctor == null)
-                throw new ArgumentException("Doctor not found");
-
-            var response = new AvailabilityResponseDto
-            {
-                DoctorId = query.DoctorId,
-                DoctorName = doctor.User?.FullName ?? "Unknown",
-                QueryDate = query.StartDate.Date
-            };
-
-            var availableSlots = new List<AvailabilitySlotDto>();
-            var currentTime = query.StartDate;
-
-            while (currentTime <= query.EndDate)
-            {
-                // Check doctor schedule
-                var doctorSchedules = await _unitOfWork.DoctorSchedules
-                    .GetDoctorSchedulesByDateAsync(query.DoctorId, currentTime.Date);
-
-                if (doctorSchedules.Any())
-                {
-                    foreach (var schedule in doctorSchedules)
-                    {
-                        var slotStart = currentTime.Date.Add(schedule.StartTime);
-                        var slotEnd = currentTime.Date.Add(schedule.EndTime);
-
-                        // Generate time slots based on duration
-                        while (slotStart.AddMinutes(query.Duration) <= slotEnd)
-                        {
-                            var slot = new AvailabilitySlotDto
-                            {
-                                StartTime = slotStart,
-                                EndTime = slotStart.AddMinutes(query.Duration),
-                                Duration = query.Duration,
-                                IsAvailable = true
-                            };
-
-                            // Check for existing appointments
-                            var existingAppointment = await _unitOfWork.Appointments
-                                .GetByDoctorAndTimeRangeAsync(query.DoctorId, slotStart, slotStart.AddMinutes(query.Duration));
-
-                            if (existingAppointment != null)
-                            {
-                                slot.IsAvailable = false;
-                                slot.Reason = "Already booked";
-                            }
-
-                            availableSlots.Add(slot);
-                            slotStart = slotStart.AddMinutes(query.Duration + (query.IncludeBufferTime ? 15 : 0));
-                        }
-                    }
-                }
-
-                currentTime = currentTime.AddDays(1);
-            }
-
-            response.AvailableSlots = availableSlots;
-            response.TotalSlots = availableSlots.Count;
-            response.AvailableCount = availableSlots.Count(s => s.IsAvailable);
-
-            return response;
-        }
+        
 
         public async Task<BulkCreateResultDto> CreateBulkAppointmentsAsync(BulkCreateAppointmentsDto dto)
         {
@@ -586,7 +530,7 @@ namespace InfertilityTreatment.Business.Services
                     return false;
 
                 // Get cycle with customer information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
                 var cus = await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId);
 
                 var reminderDto = new CreateNotificationDto
@@ -632,8 +576,8 @@ namespace InfertilityTreatment.Business.Services
             try
             {
                 // Get cycle with customer information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
-                var cus = await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
+                var cus = await _unitOfWork.Customers.GetByIdAsync(appointment.CustomerId);
 
                 var notificationDto = new CreateNotificationDto
                 {
@@ -663,8 +607,8 @@ namespace InfertilityTreatment.Business.Services
             try
             {
                 // Get cycle with customer information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
-                var cus = await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
+                var cus = await _unitOfWork.Customers.GetByIdAsync(appointment.CustomerId);
 
                 var notificationDto = new CreateNotificationDto
                 {
@@ -694,7 +638,7 @@ namespace InfertilityTreatment.Business.Services
             try
             {
                 // Get cycle with customer information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
                 var cus = await _unitOfWork.Customers.GetByIdAsync(cycle.CustomerId);
 
                 var notificationDto = new CreateNotificationDto
@@ -725,7 +669,7 @@ namespace InfertilityTreatment.Business.Services
             try
             {
                 // Get cycle with customer information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
                 var customer = await _unitOfWork.Customers.GetWithUserAsync(cycle.CustomerId);
 
                 if (!string.IsNullOrEmpty(customer.User?.Email))
@@ -753,7 +697,7 @@ namespace InfertilityTreatment.Business.Services
             try
             {
                 // Get cycle with customer information
-                var cycle = await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId);
+                var cycle = appointment.CycleId == null ? null : await _unitOfWork.TreatmentCycles.GetCycleByIdAsync(appointment.CycleId.Value);
                 var customer = await _unitOfWork.Customers.GetWithUserAsync(cycle.CustomerId);
 
                 if (!string.IsNullOrEmpty(customer.User?.Email))

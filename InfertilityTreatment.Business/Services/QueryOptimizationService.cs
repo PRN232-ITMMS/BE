@@ -130,7 +130,7 @@ namespace InfertilityTreatment.Business.Services
                 stats["ActiveTreatmentCycles"] = await _context.TreatmentCycles
                     .Where(tc => tc.Status == Entity.Enums.CycleStatus.InProgress)
                     .CountAsync();
-                stats["TotalPayments"] = await _context.Payments.CountAsync();
+             
                 stats["PendingAppointments"] = await _context.Appointments
                     .Where(a => a.ScheduledDateTime >= DateTime.Today && 
                                a.Status == Entity.Enums.AppointmentStatus.Scheduled)

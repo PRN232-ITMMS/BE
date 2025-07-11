@@ -31,9 +31,9 @@ namespace InfertilityTreatment.Entity.Entities
         [ForeignKey(nameof(UserId))]
         public virtual User User { get; set; } = null!;
 
+        public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         public virtual ICollection<TreatmentCycle> TreatmentCycles { get; set; } = new List<TreatmentCycle>();
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-        public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
     }
 }

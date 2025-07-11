@@ -241,49 +241,7 @@ namespace InfertilityTreatment.Business.Templates
         }
 
 
-        public static string PaymentConfirmation(Payment payment, string customerName)
-        {
-            var template = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <title>Payment Confirmation</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .header {{ background-color: #4CAF50; color: white; padding: 20px; text-align: center; }}
-        .content {{ padding: 20px; }}
-        .payment-details {{ background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 15px 0; }}
-        .footer {{ background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px; }}
-    </style>
-</head>
-<body>
-    <div class='header'>
-        <h1>Payment Confirmation</h1>
-    </div>
-    <div class='content'>
-        <h2>Dear {customerName},</h2>
-        <p>Thank you for your payment. We have successfully received your payment:</p>
-        <div class='payment-details'>
-            <h3>Payment Details:</h3>
-            <p><strong>Payment ID:</strong> {payment.Id}</p>
-            <p><strong>Amount:</strong> {payment.Amount:C}</p>
-            <p><strong>Payment Method:</strong> {payment.PaymentMethod}</p>
-            <p><strong>Transaction Date:</strong> {payment.CreatedAt:MMMM dd, yyyy HH:mm}</p>
-            <p><strong>Status:</strong> {payment.Status}</p>
-        </div>
-        <p>This email serves as your receipt. Please keep it for your records.</p>
-        <p>If you have any questions about this payment, please contact our billing department.</p>
-        <p>Best regards,<br>Infertility Treatment Team</p>
-    </div>
-    <div class='footer'>
-        <p>&copy; 2025 Infertility Treatment System. All rights reserved.</p>
-    </div>
-</body>
-</html>";
-
-            return template;
-        }
+        
 
 
         public static string BulkNotificationTemplate(string title, string message, string customerName)

@@ -13,7 +13,7 @@ namespace InfertilityTreatment.Data.Configurations
             builder.HasKey(a => a.Id);
 
             builder.Property(a => a.CycleId)
-                   .IsRequired();
+                   .IsRequired(false);
 
             builder.Property(a => a.DoctorId)
                    .IsRequired();

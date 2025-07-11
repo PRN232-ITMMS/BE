@@ -61,7 +61,7 @@ namespace InfertilityTreatment.API.Controllers
         /// Create a new medication
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Roles = "Doctor,Manager")]
         public async Task<IActionResult> CreateMedication([FromBody] CreateMedicationDto dto)
         {
             if (!ModelState.IsValid)
@@ -91,7 +91,7 @@ namespace InfertilityTreatment.API.Controllers
         /// Update an existing medication
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Doctor,Admin")]
+        [Authorize(Roles = "Doctor,Manager")]
         public async Task<IActionResult> UpdateMedication(int id, [FromBody] UpdateMedicationDto dto)
         {
             if (!ModelState.IsValid)
@@ -120,7 +120,7 @@ namespace InfertilityTreatment.API.Controllers
         /// Delete a medication (soft delete)
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Doctor,Manager")]
         public async Task<IActionResult> DeleteMedication(int id)
         {
             try

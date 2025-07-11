@@ -11,7 +11,6 @@ namespace InfertilityTreatment.Entity.DTOs.DoctorSchedules
 
         public int Id { get; set; }
 
-        public int DoctorId { get; set; }
 
         public TimeSpan StartTime { get; set; }
 

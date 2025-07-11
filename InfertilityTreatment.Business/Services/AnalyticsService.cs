@@ -73,7 +73,8 @@ namespace InfertilityTreatment.Business.Services
             else if (role == UserRole.Customer && userId.HasValue)
             {
                 var customerCycleIds = cyclesList.Select(c => c.Id).ToList();
-                appointments = appointments.Where(a => customerCycleIds.Contains(a.CycleId));
+                appointments = appointments.Where(a => a.CycleId.HasValue && customerCycleIds.Contains(a.CycleId.Value));
+
             }
             // For Admin role, we don't filter appointments - show all data for the specified role
 
@@ -725,7 +726,10 @@ namespace InfertilityTreatment.Business.Services
             var patientCycles = allCyclesData.Where(c => c.CustomerId == targetPatientId).ToList();
 
             var allAppointments = await _unitOfWork.Appointments.GetAllAsync();
-            var patientAppointments = allAppointments.Where(a => patientCycles.Select(c => c.Id).Contains(a.CycleId)).ToList();
+            var patientCycleIds = patientCycles.Select(c => c.Id).ToList();
+            var patientAppointments = allAppointments
+                        .Where(a => a.CycleId.HasValue && patientCycleIds.Contains(a.CycleId.Value))
+                        .ToList();
 
             var allTestResults = await _unitOfWork.TestResults.GetAllAsync();
             var patientTestResults = allTestResults.Where(tr => patientCycles.Select(c => c.Id).Contains(tr.CycleId)).ToList();
@@ -737,9 +741,9 @@ namespace InfertilityTreatment.Business.Services
             var patientPrescriptions = allPrescriptions.Where(p => patientPhaseIds.Contains(p.PhaseId)).ToList();
 
             // Get payments through treatment packages
-            var allPayments = await _unitOfWork.PaymentRepository.GetAllAsync();
+
             var patientPackageIds = patientCycles.Select(c => c.PackageId).ToList();
-            var patientPayments = allPayments.Where(p => patientPackageIds.Contains(p.TreatmentPackageId)).ToList();
+
 
             // Build journey steps
             var journeySteps = new List<JourneyStepDto>();
@@ -815,16 +819,7 @@ namespace InfertilityTreatment.Business.Services
                 });
             }
 
-            // Add payment steps
-            foreach (var payment in patientPayments.OrderBy(p => p.CreatedAt))
-            {
-                journeySteps.Add(new JourneyStepDto
-                {
-                    StepName = $"Payment {payment.Id} - {payment.PaymentMethod}",
-                    Timestamp = payment.CreatedAt,
-                    Status = payment.Status.ToString()
-                });
-            }
+
 
             // Sort all steps by timestamp
             var sortedSteps = journeySteps.OrderBy(s => s.Timestamp).ToList();

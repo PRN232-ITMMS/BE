@@ -22,10 +22,7 @@ namespace InfertilityTreatment.Business.Validators
                 .MaximumLength(1000)
                 .WithMessage("Special instructions cannot exceed 1000 characters");
 
-            RuleFor(x => x.TreatmentType)
-                .IsInEnum()
-                .When(x => x.TreatmentType.HasValue)
-                .WithMessage("Invalid treatment type");
+           
         }
     }
 }

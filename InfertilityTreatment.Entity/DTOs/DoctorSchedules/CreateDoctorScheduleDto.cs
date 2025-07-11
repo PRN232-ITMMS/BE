@@ -8,7 +8,6 @@ namespace InfertilityTreatment.Entity.DTOs.DoctorSchedules
 {
     public class CreateDoctorScheduleDto
     {
-        public int DoctorId { get; set; }
 
         public TimeSpan StartTime { get; set; }
 

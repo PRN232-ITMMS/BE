@@ -143,30 +143,7 @@ namespace InfertilityTreatment.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Send payment confirmation email
-        /// </summary>
-        [HttpPost("send-payment-confirmation")]
-        [Authorize(Roles = "Admin,Staff")]
-        public async Task<IActionResult> SendPaymentConfirmation([FromBody] SendPaymentConfirmationDto dto)
-        {
-            try
-            {
-                var result = await _emailService.SendPaymentConfirmationAsync(dto);
-                
-                if (result.Success)
-                {
-                    return Ok(new { success = true, message = result.Message });
-                }
-                
-                return BadRequest(new { success = false, message = result.Message, errors = result.Errors });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send payment confirmation email for payment {PaymentId}", dto.PaymentId);
-                return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
-            }
-        }
+       
 
         /// <summary>
         /// Send bulk notification emails
