@@ -23,7 +23,11 @@ namespace InfertilityTreatment.Business.Mappings
         public AutoMapperProfile()
         {
             // User mappings
-            CreateMap<User, UserProfileDto>();
+            CreateMap<User, UserProfileDto>()
+                .ForMember(dest => dest.Customer, opt => opt.MapFrom(src => src.Customer))
+                .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor));
+            CreateMap<Customer, CustomerProfileDto>();
+            CreateMap<Doctor, DoctorProfileDto>();
             CreateMap<RegisterRequestDto, User>()
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))

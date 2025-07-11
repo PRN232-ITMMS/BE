@@ -12,5 +12,9 @@ namespace InfertilityTreatment.Entity.DTOs.Users
         public UserRole Role { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
+        
+        // Navigation properties
+        public CustomerProfileDto? Customer { get; set; }
+        public DoctorProfileDto? Doctor { get; set; }
     }
 }

@@ -35,8 +35,8 @@ namespace InfertilityTreatment.Business.Services
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            // Find user by email
-            var user = await _unitOfWork.Users.FindByEmailAsync(request.Email);
+            // Find user by email with related data
+            var user = await _unitOfWork.Users.FindByEmailWithRelatedDataAsync(request.Email);
             
             if (user == null)
             {
@@ -164,8 +164,8 @@ namespace InfertilityTreatment.Business.Services
                 throw new UnauthorizedAccessException("Invalid or expired refresh token");
             }
 
-            // Get user
-            var user = await _unitOfWork.Users.GetByIdAsync(refreshToken.UserId);
+            // Get user with related data
+            var user = await _unitOfWork.Users.GetByIdWithRelatedDataAsync(refreshToken.UserId);
             
             if (user == null || !user.IsActive)
             {

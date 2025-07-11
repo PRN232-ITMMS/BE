@@ -7,6 +7,8 @@ namespace InfertilityTreatment.Data.Repositories.Interfaces
     public interface IUserRepository : IBaseRepository<User>
     {
         Task<User?> FindByEmailAsync(string email);
+        Task<User?> FindByEmailWithRelatedDataAsync(string email);
+        Task<User?> GetByIdWithRelatedDataAsync(int id);
         Task<PaginatedResultDto<User?>> GetUsers(UserFilterDto filter);
         Task<User?> UpdateProfile(User user);
         Task<User?> ChangePasswordAsync(int userId, string password);
