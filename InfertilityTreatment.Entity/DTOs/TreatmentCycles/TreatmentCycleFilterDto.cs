@@ -10,9 +10,6 @@ namespace InfertilityTreatment.Entity.DTOs.TreatmentCycles
     {
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
-
-        public int? CustomerId { get; set; }
-        public int? DoctorId { get; set; }
     }
 
 }

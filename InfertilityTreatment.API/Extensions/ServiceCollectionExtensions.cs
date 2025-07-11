@@ -100,6 +100,7 @@ namespace InfertilityTreatment.API.Extensions
             // FluentValidation
             services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
             services.AddScoped<IValidator<RegisterRequestDto>, RegisterRequestValidator>();
+            services.AddScoped<IValidator<InfertilityTreatment.Entity.DTOs.Users.CreateUserDto>, CreateUserDtoValidator>();
             
             // Add validators for new DTOs
             services.AddScoped<IValidator<InfertilityTreatment.Entity.DTOs.TreatmentCycles.CreateCycleDto>, CreateCycleDtoValidator>();

@@ -13,8 +13,8 @@ namespace InfertilityTreatment.Business.Interfaces
     public interface ICycleService
     {
         Task<CycleResponseDto> CreateCycleAsync(CreateCycleDto createCycleDto);
-        Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByCustomerAsync(int customerId, TreatmentCycleFilterDto filter);
-        Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByDoctorAsync(int doctorId, TreatmentCycleFilterDto filter);
+        Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByCustomerAsync(int userId, TreatmentCycleFilterDto filter);
+        Task<PaginatedResultDto<CycleResponseDto>> GetCyclesByDoctorAsync(int userId, TreatmentCycleFilterDto filter);
         Task<CycleDetailDto> GetCycleByIdAsync(int cycleId);
         Task<bool> UpdateCycleStatusAsync(int cycleId, CycleStatus status);
         Task<bool> AssignDoctorToCycleAsync(int cycleId, int doctorId);
